@@ -98,8 +98,6 @@ SuperDiffuse_FilePool : SuperDiffuse_Subject {
 		buttonsLayout.add(addButton);
 		buttonsLayout.add(removeButton);
 
-		buttonsLayout.add(SuperDiffuse_PatchToggle());
-
 		layout.add(buttonsLayout);
 		win.layout_(layout);
 		win.front;
