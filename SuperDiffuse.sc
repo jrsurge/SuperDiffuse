@@ -1,4 +1,4 @@
-SuperDiffuse {
+/*SuperDiffuse {
 	var filePool, sfView;
 	*new { | numIns=2, numOuts=2 |
 		^super.new.init;
@@ -9,4 +9,4 @@ SuperDiffuse {
 		sfView = SuperDiffuse_Transport(filePool);
 	}
 
-}
+}*/
