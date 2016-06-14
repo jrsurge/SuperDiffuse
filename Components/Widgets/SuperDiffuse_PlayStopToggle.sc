@@ -1,4 +1,4 @@
-SuperDiffuse_PlayStopButton : SuperDiffuse_Toggle {
+SuperDiffuse_PlayStopToggle : SuperDiffuse_Toggle {
 
 	*new { | parent, bounds |
 		^super.new(parent,bounds);
