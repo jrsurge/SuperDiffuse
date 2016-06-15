@@ -21,6 +21,10 @@ SuperDiffuse_Piece {
 		m_name = name;
 	}
 
+	path {
+		^m_path;
+	}
+
 	cuedBuffer {
 		^m_cuedBuffer;
 	}
@@ -28,5 +32,9 @@ SuperDiffuse_Piece {
 	recue {
 		m_cuedBuffer.close;
 		m_cuedBuffer.cueSoundFile(m_path,m_cuedBuffer.numChannels);
+	}
+
+	printOn { | stream |
+		stream << m_name;
 	}
 }

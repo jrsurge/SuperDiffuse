@@ -5,7 +5,7 @@ SuperDiffuse {
 	}
 }
 
-SuperDiffuse_Concert {
+SuperDiffuse_Concert : SuperDiffuse_Subject {
 	var m_pieces, m_matrix;
 	var m_concertGUI, m_matrixGUI;
 
@@ -16,7 +16,7 @@ SuperDiffuse_Concert {
 	ninit { | numIns, numOuts |
 		m_pieces = List();
 		this.initMatrix(numIns,numOuts);
-		//m_concertGUI = SuperDiffuse_ConcertGUI(this);
+		m_concertGUI = SuperDiffuse_ConcertGUI(this);
 		//m_matrixGUI = SuperDiffuse_MatrixGUI(this);
 	}
 
@@ -28,11 +28,13 @@ SuperDiffuse_Concert {
 		if(piece.isKindOf(SuperDiffuse_Piece) && (m_pieces.includesEqual(piece) != true))
 		{
 			m_pieces.add(piece);
+			this.notify;
 		}
 	}
 
 	removePiece { | piece |
 		m_pieces.remove(piece);
+		this.notify;
 	}
 
 	pieces {
