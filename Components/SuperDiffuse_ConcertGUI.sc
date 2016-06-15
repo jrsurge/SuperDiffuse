@@ -78,10 +78,49 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_leftLayout.add(m_listView);
 
-		m_upButton = Button().states_([["^"]]);
-		m_downButton = Button().states_([["v"]]);
-		m_addButton = Button().states_([["+"]]);
-		m_removeButton = Button().states_([["-"]]);
+		m_upButton = Button().states_([["^"]]).action_({ | btn |
+			var sel;
+			sel = m_listView.selection[0];
+			if( (sel != 0) && (sel != nil) )
+			{
+				m_parent.pieces.swap(sel,sel-1);
+				this.updatePieces;
+				m_listView.selection = sel - 1;
+			}
+		});
+
+		m_downButton = Button().states_([["v"]]).action_({ | btn |
+			var sel;
+			sel = m_listView.selection[0];
+			if( (sel != (m_parent.pieces.size-1)) && (sel != nil) )
+			{
+				m_parent.pieces.swap(sel,sel + 1);
+				this.updatePieces;
+				m_listView.selection = sel + 1;
+			}
+		});
+
+		m_addButton = Button().states_([["+"]]).action_({
+			Dialog.openPanel({|v|
+				v.do({ | path |
+					m_parent.addPiece(SuperDiffuse_Piece(path));
+				});
+			},multipleSelection:true)
+		});
+		m_removeButton = Button().states_([["-"]]).action_({
+			var sel;
+			sel = m_listView.selection[0];
+
+			if(sel != nil)
+			{
+				"Removing: %".format(m_parent.pieces[sel]).postln;
+				m_parent.removePiece(m_parent.pieces[sel]);
+				if(sel != 0)
+				{
+					m_listView.valueAction_(sel - 1);
+				}
+			}
+		});
 
 		m_buttonLayout.add(m_upButton);
 		m_buttonLayout.add(m_downButton);
