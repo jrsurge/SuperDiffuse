@@ -132,7 +132,27 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_mainLayout.add(m_leftLayout);
 		m_mainLayout.setStretch(m_leftLayout,0);
 
-		m_sfView = SoundFileView().minWidth_(500).gridOn_(false).timeCursorOn_(true).rmsColor_(Color.fromHexString("#63B76C")).peakColor_(Color.fromHexString("#4D8C57")).setSelectionColor(0,Color.fromHexString("#00CCCC"));
+		m_sfView = SoundFileView()
+		.minWidth_(500)
+		.gridOn_(false)
+		.timeCursorOn_(true)
+		.rmsColor_(Color.fromHexString("#63B76C"))
+		.peakColor_(Color.fromHexString("#4D8C57"))
+		.setSelectionColor(0,Color.fromHexString("#00CCCC"))
+		.keyDownAction_({ | caller, modifiers, unicode, keycode|
+			var start = caller.selections[0][0];
+			var range = caller.selections[0][1];
+
+			if(range == 0)
+			{
+				range = caller.numFrames - start;
+			};
+
+			case
+			{keycode == 32} { }//this.play(start, range); }
+			{keycode == 13} { caller.timeCursorPosition_(0); caller.setSelection(0,[0,0]); }
+			;
+		});
 		m_rightLayout.add(m_sfView);
 
 		m_backButton = Button().states_([["<"]]);
