@@ -180,11 +180,11 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		{
 			m_sfView.timeCursorPosition_(0);
 			SoundFile.use(m_parent.pieces[m_listView.selection[0]].path,{ | sf |
-				m_sfView.readFileWithTask(sf,showProgress:true);
+				m_sfView.readFileWithTask(sf);
 			});
 		}
 		{
-			m_sfView.clear;
+			m_sfView.data_([0]);
 		}
 	}
 
