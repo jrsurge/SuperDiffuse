@@ -37,4 +37,8 @@ SuperDiffuse_Piece {
 	printOn { | stream |
 		stream << m_name;
 	}
+
+	== { | b |
+		^(this.path == b.path);
+	}
 }
