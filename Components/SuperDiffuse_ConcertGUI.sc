@@ -36,6 +36,44 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_listView = ListView().action_({ | lv |
 			this.updateSFView;
+		})
+		.keyDownAction_({ | caller, modifiers, unicode, keycode |
+			if( (caller.selection[0] != nil) && (keycode == 101) )
+			{
+				var win, layout, fieldLayout, textEdit, buttonLayout, okButton, cancelButton;
+				var sel, piece;
+
+				sel = caller.selection[0];
+				piece = m_parent.pieces[sel];
+
+				win = Window("SuperDiffuse | Edit Piece Info");
+				layout = VLayout();
+				fieldLayout = HLayout();
+				buttonLayout = HLayout();
+
+				fieldLayout.add(StaticText().string_("Name: "));
+				textEdit = TextField().string_( piece.name );
+				fieldLayout.add(textEdit);
+
+				cancelButton = Button().states_([["Cancel"]]).action_({
+					win.close;
+				});
+				okButton = Button().states_([["OK"]]).action_({
+					piece.name_(textEdit.string);
+					this.updatePieces;
+					caller.valueAction_(sel);
+					win.close;
+				});
+
+				buttonLayout.add(cancelButton);
+				buttonLayout.add(okButton);
+
+				layout.add(fieldLayout);
+				layout.add(buttonLayout);
+
+				win.layout_(layout);
+				win.front;
+			}
 		});
 
 		m_leftLayout.add(m_listView);
