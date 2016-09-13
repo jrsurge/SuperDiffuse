@@ -38,6 +38,10 @@ SuperDiffuse_Piece {
 		stream << m_name;
 	}
 
+	storeOn { | stream |
+		stream << "SuperDiffuse_Piece.new(" << m_path.asCompileString << ")";
+	}
+
 	== { | b |
 		^(this.path == b.path);
 	}
