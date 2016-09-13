@@ -19,6 +19,15 @@ SuperDiffuse_Observer {
 			"UPDATE CALLED".postln;
 		}
 	}
+
+	changeSubject { | newSubject |
+		if(newSubject.isKindOf(SuperDiffuse_Subject))
+		{
+			m_subject.detach(this);
+			m_subject = newSubject;
+			m_subject.attach(this);
+		};
+	}
 }
 
 SuperDiffuse_Subject {
