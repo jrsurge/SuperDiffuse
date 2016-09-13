@@ -50,7 +50,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	}
 
 	initMatrix { | numIns, numOuts |
-		m_matrix = Array.fill(numIns, Array.fill(numOuts, 0));
+		m_matrix = Array.fill(numIns, {Array.fill(numOuts, 0)});
 	}
 
 	addPiece { | piece |
