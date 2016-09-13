@@ -3,6 +3,17 @@ SuperDiffuse {
 	*new { | numIns, numOuts |
 		^SuperDiffuse_Concert(numIns,numOuts);
 	}
+
+	/* Will eventually have a Builder to recreate concerts from saves
+	Pseudo-code:
+	load{ | save |
+		var concert;
+		concert = SuperDiffuse_Concert(save[\numIns], save[\numOuts]);
+		save[\pieces].do({|piece|
+			concert.addPiece(piece);
+		});
+	}
+	*/
 }
 
 SuperDiffuse_Concert : SuperDiffuse_Subject {
