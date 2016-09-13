@@ -46,7 +46,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	initGroups {
 		m_inGroup = Group();
 		m_patcherGroup = Group.after(m_inGroup);
-		m_outGroup = Group.after(m_outGroup);
+		m_outGroup = Group.after(m_patcherGroup);
 	}
 
 	initMatrix { | numIns, numOuts |
