@@ -30,10 +30,7 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 		m_value = 0;
 
 		this.prInitGUI;
-		("Creating OSC Listener for: " + oscAddressPattern).postln;
-		m_oscFunc = OSCFunc({|msg, time, addr, recvPort |
-			{m_slider.valueAction_(msg[1])}.defer(0);
-		}, oscAddressPattern.asSymbol);
+		this.changeOSC(oscAddressPattern);
 
 	}
 
@@ -55,6 +52,14 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 		m_midiFunc.free;
 		m_midiFunc = MIDIFunc.cc({|val|  this.valueAction_(val/127); });
 		m_midiFunc.learn;
+	}
+
+	changeOSC { | oscAddressPattern |
+		m_oscFunc.free;
+		("Creating OSC Listener for: " + oscAddressPattern).postln;
+		m_oscFunc = OSCFunc({|msg, time, addr, recvPort |
+			this.valueAction_(msg[1]);
+		}, oscAddressPattern.asSymbol);
 	}
 
 	action {
