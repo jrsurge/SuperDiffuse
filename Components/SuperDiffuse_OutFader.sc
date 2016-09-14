@@ -28,8 +28,7 @@ SuperDiffuse_OutFader : SuperDiffuse_Observer {
 	update { | subject |
 		if(subject === m_subject)
 		{
-			m_subject.value.postln;
-			// controlBus.set(m_subject.value);
+			m_controlBus.value_(m_subject.value);
 		};
 	}
 }
