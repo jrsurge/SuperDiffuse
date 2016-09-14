@@ -3,12 +3,12 @@
 **  OutFader
 **
 **  This is part of the output level control system.
-**  The magic that actually sets the
 **
 **  OutFader is an Observer Pattern wrapper around
-**  a Control bus.
+**  a Control bus - as such, it is an 'invisible'
+**  fader.
 **
-**  The idea is that the value of the observered
+**  The idea is that the value of the observed
 **  ControlFader is used to set the control bus
 **  owned by the Concert.
 **
