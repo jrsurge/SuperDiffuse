@@ -1,7 +1,7 @@
 /* Convenience wrapper */
 SuperDiffuse {
-	*new { | numIns, numOuts |
-		^SuperDiffuse_Concert(numIns,numOuts);
+	*new { | numIns, numOuts, numControls |
+		^SuperDiffuse_Concert(numIns,numOuts, numControls);
 	}
 
 	/* Will eventually have a Builder to recreate concerts from saves
@@ -17,24 +17,35 @@ SuperDiffuse {
 }
 
 SuperDiffuse_Concert : SuperDiffuse_Subject {
-	var m_pieces, m_matrix;
+	var m_pieces, m_matrix, m_numIns, m_numOuts, m_numControls;
+	var m_masterControl, m_outFaders;
 	var m_inBus, m_outBus, m_controlBus;
 	var m_inGroup, m_patcherGroup, m_outGroup;
-	var m_concertGUI, m_matrixGUI;
+	var m_concertGUI;
 
-	*new { | numIns, numOuts |
-		^super.new.ninit(numIns,numOuts);
+	*new { | numIns, numOuts, numControls |
+		^super.new.ninit(numIns,numOuts,numControls);
 	}
 
-	ninit { | numIns, numOuts |
+	ninit { | numIns, numOuts, numControls |
 		m_pieces = List();
+		m_outFaders = List();
+
+		m_numIns = numIns;
+		m_numOuts = numOuts;
+		m_numControls = numControls;
 
 		this.initBuses(numIns, numOuts);
 		this.initGroups;
-		this.initMatrix(numIns,numOuts);
+		this.initMatrix(numIns, numOuts);
 
+		m_masterControl = SuperDiffuse_MasterControl(numControls);
+		m_numControls.do({ | i |
+			m_outFaders.add(SuperDiffuse_OutFader(m_masterControl.fader(i), m_controlBus.subBus(i)));
+		});
 		m_concertGUI = SuperDiffuse_ConcertGUI(this);
-		//m_matrixGUI = SuperDiffuse_MatrixGUI(this);
+
+		("\n\n*** Welcome to SuperDiffuse ***\nCopyright(c) James Surgenor, 2016\nDeveloped at the University of Sheffield Sound Studios\n\n").postln;
 	}
 
 	initBuses { | numIns, numOuts |
@@ -74,4 +85,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		^m_matrix;
 	}
 
+	controls {
+		^m_masterControl;
+	}
 }
