@@ -11,6 +11,15 @@ SuperDiffuse_MasterControl {
 		MIDIIn.connectAll;
 		m_numControls = numControls;
 		m_controlFaders = List();
+		this.prInitControlFaders;
+	}
+
+	prInitControlFaders {
+		m_numControls.do({ | i |
+			var cf;
+			cf = SuperDiffuse_ControlFader("/SuperDiffuse/Master/" ++ (i+1));
+			m_controlFaders.add(cf);
+		});
 	}
 
 	fader{ | i |
@@ -21,18 +30,7 @@ SuperDiffuse_MasterControl {
 		m_layout.free;
 		m_layout = HLayout();
 
-		if(m_controlFaders.size == 0)
-		{
-			m_numControls.do({ | i |
-				var cf;
-				cf = SuperDiffuse_ControlFader("/SuperDiffuse/Master/" ++ (i+1));
-				m_controlFaders.add(cf);
-				m_layout.add(cf.gui);
-			});
-		}
-		{
-			m_controlFaders.do({| cf | m_layout.add(cf.gui); });
-		};
+		m_controlFaders.do({| cf | m_layout.add(cf.gui); });
 
 		^m_layout;
 	}
