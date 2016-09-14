@@ -153,7 +153,10 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			{keycode == 13} { caller.timeCursorPosition_(0); caller.setSelection(0,[0,0]); }
 			;
 		});
-		m_rightLayout.add(m_sfView);
+
+		m_rightLayout.add(m_parent.controls.gui,1);
+
+		m_rightLayout.add(m_sfView,3);
 
 		m_backButton = Button().states_([["<"]]);
 		m_playStopButton = SuperDiffuse_PlayStopToggle();
@@ -167,6 +170,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_mainLayout.add(m_rightLayout);
 		m_mainLayout.setStretch(m_rightLayout,1);
+
+		m_win.onClose_({ m_parent.clear; });
 
 		m_win.front;
 	}

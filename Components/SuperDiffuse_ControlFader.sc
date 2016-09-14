@@ -31,7 +31,6 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 
 		this.prInitGUI;
 		this.changeOSC(oscAddressPattern);
-
 	}
 
 	value {
@@ -72,9 +71,9 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 		m_midiLearnButton.free;
 
 		m_layout = VLayout();
-		m_slider = Slider().action_({|v| this.valueAction_(v.value)}).value_(this.value);
-		m_midiLearnButton = Button().states_([["Learn"]]).action_({ this.learn; });
-		m_layout.add(m_slider);
+		m_slider = Slider().maxWidth_(50).action_({|v| this.valueAction_(v.value)}).value_(this.value);
+		m_midiLearnButton = Button().maxWidth_(50).states_([["L"]]).action_({ this.learn; });
+		m_layout.add(m_slider,align:\center);
 		m_layout.add(m_midiLearnButton);
 	}
 
