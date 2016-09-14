@@ -88,4 +88,15 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	controls {
 		^m_masterControl;
 	}
+
+	clear {
+		m_inBus.free;
+		m_outBus.free;
+		m_controlBus.free;
+		m_masterControl.clear;
+		m_inGroup.free;
+		m_outGroup.free;
+		m_patcherGroup.free;
+	}
+
 }
