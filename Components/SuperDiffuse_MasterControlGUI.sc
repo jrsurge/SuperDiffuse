@@ -13,19 +13,38 @@ SuperDiffuse_MasterControlGUI {
 		this.display;
 	}
 
+	fader{ | i |
+		^m_controlFaders[i];
+	}
+
 	display {
 		var win, layout;
 
 		win = Window("SuperDiffuse | Master Control");
 		layout = HLayout();
 
-		m_numControls.do({ | i |
-			layout.add(SuperDiffuse_ControlFader("/SuperDiffuse/Master/" ++ (i+1)).gui);
-		});
+		if(m_controlFaders.size == 0)
+		{
+			m_numControls.do({ | i |
+				var cf;
+				cf = SuperDiffuse_ControlFader("/SuperDiffuse/Master/" ++ (i+1));
+				m_controlFaders.add(cf);
+				layout.add(cf.gui);
+			});
+		}
+		{
+			m_controlFaders.do({| cf | layout.add(cf.gui); });
+		};
 
 		win.layout_(layout);
 
-		win.onClose_({m_controlFaders.do(_.clear)});
+		win.onClose_({
+			/*
+			**  NOTE: Not sure we want to do this anymore - depending on the GUI existing isn't the best
+			*/
+			//m_controlFaders.do(_.clear);
+			//MIDIIn.disconnectAll;
+		});
 
 		win.front;
 	}
