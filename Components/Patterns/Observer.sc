@@ -23,10 +23,18 @@ SuperDiffuse_Observer {
 	changeSubject { | newSubject |
 		if(newSubject.isKindOf(SuperDiffuse_Subject))
 		{
-			m_subject.detach(this);
+			if(m_subject != nil)
+			{
+				m_subject.detach(this);
+			};
 			m_subject = newSubject;
 			m_subject.attach(this);
+			this.update(m_subject);
 		};
+	}
+
+	subject {
+		^m_subject;
 	}
 }
 

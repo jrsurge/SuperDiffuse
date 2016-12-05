@@ -31,4 +31,8 @@ SuperDiffuse_OutFader : SuperDiffuse_Observer {
 			m_controlBus.value_(m_subject.value);
 		};
 	}
+
+	index {
+		^ m_controlBus.index;
+	}
 }

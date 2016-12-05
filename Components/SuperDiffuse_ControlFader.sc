@@ -37,12 +37,12 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 		^m_value;
 	}
 
-	value_{|v|
+	value_ { | v |
 		m_value = v;
 		AppClock.sched(0,{m_slider.value_(v)});
 	}
 
-	valueAction_{|v|
+	valueAction_ { | v |
 		this.value_(v);
 		this.action;
 	}

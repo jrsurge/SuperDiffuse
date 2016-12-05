@@ -26,6 +26,10 @@ SuperDiffuse_MasterControl {
 		^m_controlFaders[i];
 	}
 
+	indexOf { | fader |
+		^m_controlFaders.indexOf(fader);
+	}
+
 	gui {
 		m_layout.free;
 		m_layout = HLayout();
