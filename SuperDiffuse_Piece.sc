@@ -1,5 +1,5 @@
 SuperDiffuse_Piece {
-	var m_name, m_path, m_cuedBuffer;
+	var m_name, m_path, m_cuedBuffer, m_matrixInd;
 
 	*new { | path |
 		^super.new.init(path);
@@ -8,6 +8,7 @@ SuperDiffuse_Piece {
 	init { | path |
 		m_name = path;
 		m_path = path;
+		m_matrixInd = 0;
 		SoundFile.use(path,{ | sf |
 			m_cuedBuffer = Buffer.cueSoundFile(Server.default, sf.path,numChannels:sf.numChannels);
 		});
@@ -44,5 +45,16 @@ SuperDiffuse_Piece {
 
 	== { | b |
 		^(this.path == b.path);
+	}
+
+	matrixInd {
+		^m_matrixInd;
+	}
+
+	matrixInd_ { | ind |
+		if(m_matrixInd != ind)
+		{
+			m_matrixInd = ind;
+		}
 	}
 }

@@ -46,13 +46,14 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_piecesListView = ListView().action_({ | lv |
 			this.updateSFView;
+			m_matricesListView.valueAction_(m_parent.pieces[lv.selection[0]].matrixInd);
 		})
 		.keyDownAction_({ | caller, modifiers, unicode, keycode |
 			if(caller.hasFocus)
 			{
 				if( (caller.selection[0] != nil) && (keycode == 101) )
 				{
-					var win, layout, fieldLayout, textEdit, buttonLayout, okButton, cancelButton;
+					var win, layout, nameLayout, textEdit, buttonLayout, okButton, cancelButton, matrixLayout, matrixMenu;
 					var sel, piece;
 
 					sel = caller.selection[0];
@@ -60,18 +61,25 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 					win = Window("SuperDiffuse | Edit Piece Info");
 					layout = VLayout();
-					fieldLayout = HLayout();
+					nameLayout = HLayout();
+					matrixLayout = HLayout();
 					buttonLayout = HLayout();
 
-					fieldLayout.add(StaticText().string_("Name: "));
+					nameLayout.add(StaticText().string_("Name: "));
 					textEdit = TextField().string_( piece.name );
-					fieldLayout.add(textEdit);
+					nameLayout.add(textEdit);
+
+					matrixLayout.add(StaticText().string_("Matrix:"));
+					matrixMenu = PopUpMenu().items_(m_parent.matrices.collect({|matrix| matrix.name; })).value_(piece.matrixInd);
+
+					matrixLayout.add(matrixMenu);
 
 					cancelButton = Button().states_([["Cancel"]]).action_({
 						win.close;
 					});
 					okButton = Button().states_([["OK"]]).action_({
 						piece.name_(textEdit.string);
+						piece.matrixInd_(matrixMenu.value);
 						this.updatePieces;
 						caller.value_(sel);
 						win.close;
@@ -80,7 +88,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 					buttonLayout.add(cancelButton);
 					buttonLayout.add(okButton);
 
-					layout.add(fieldLayout);
+					layout.add(nameLayout);
+					layout.add(matrixLayout);
 					layout.add(buttonLayout);
 
 					win.layout_(layout);
@@ -242,14 +251,14 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 			if(sel != nil)
 			{
-				m_parent.removeMatrix(m_parent.matrix(sel));
 				if(sel != 0)
 				{
+					m_parent.removeMatrix(m_parent.matrix(sel));
 					m_matricesListView.valueAction_(sel - 1);
 				}
 				{
-					m_matricesListView.valueAction_(sel);
-				};
+					"Unable to remove initial matrix".warn;
+				}
 			};
 
 		});
