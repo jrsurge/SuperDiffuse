@@ -20,6 +20,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	var m_pieces, m_matrixMaster, m_matrices, m_numIns, m_numOuts, m_numControls;
 	var m_masterControl, m_outFaders;
 	var m_inBus, m_outBus, m_controlBus;
+	var m_patchers;
 	var m_inGroup, m_patcherGroup, m_outGroup;
 	var m_concertGUI;
 
@@ -28,30 +29,40 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	}
 
 	ninit { | numIns, numOuts, numControls |
-		m_pieces = List();
-		m_outFaders = List();
+		// We'll need to restart the Server with the right number of output channels..
+		Server.default.options.numOutputBusChannels_(numOuts);
+		Server.default.quit;
+		Server.default.waitForBoot({
+			// Once we're ready to go, initialise everything..
+			m_pieces = List();
+			m_outFaders = List();
 
-		m_matrices = List();
+			m_matrices = List();
 
-		m_numIns = numIns;
-		m_numOuts = numOuts;
-		m_numControls = numControls;
+			// We'll need to be able to talk to our patchers if we ever want to do proportional level sending
+			// i.e. multiple ins to single out
+			m_patchers = Array.fill(numIns, { Array.fill(numOuts, { nil } ) });
 
-		this.registerSynthDefs;
+			m_numIns = numIns;
+			m_numOuts = numOuts;
+			m_numControls = numControls;
 
-		this.initBuses(numIns, numOuts);
-		this.initGroups;
-		this.initMatrix(numIns, numOuts);
+			this.registerSynthDefs;
 
-		m_masterControl = SuperDiffuse_MasterControl(numControls);
-		m_numOuts.do({ | i |
-			m_outFaders.add(SuperDiffuse_OutFader(m_masterControl.fader(i%numControls), m_controlBus.subBus(i)));
+			this.initBuses(numIns, numOuts);
+			this.initGroups;
+			this.initMatrix(numIns, numOuts);
+
+			m_masterControl = SuperDiffuse_MasterControl(numControls);
+			m_numOuts.do({ | i |
+				m_outFaders.add(SuperDiffuse_OutFader(m_masterControl.fader(i%numControls), m_controlBus.subBus(i)));
+			});
+			m_concertGUI = SuperDiffuse_ConcertGUI(this);
+
+			("\n\n*** Welcome to SuperDiffuse ***\nCopyright(c) James Surgenor, 2016\nDeveloped at the University of Sheffield Sound Studios\n\n").postln;
+
+			Synth(\sd_outsynth,[\in, m_inBus, \control, m_controlBus], m_outGroup);
 		});
-		m_concertGUI = SuperDiffuse_ConcertGUI(this);
-
-		("\n\n*** Welcome to SuperDiffuse ***\nCopyright(c) James Surgenor, 2016\nDeveloped at the University of Sheffield Sound Studios\n\n").postln;
-
-		Synth(\sd_outsynth,[\in, m_inBus, \control, m_controlBus], m_outGroup);
 	}
 
 	registerSynthDefs {
@@ -111,13 +122,13 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	}
 
 	loadMatrix { | matrix |
-		"Loading matrix: %".format(matrix.name).postln;
-		m_patcherGroup.freeAll;
+		this.clearPatchers;
+
 		m_numIns.do({ | in |
 			m_numOuts.do({ | out |
 				if(matrix.matrix[in][out] == 1)
 				{
-					Synth(\sd_patcher, [\in, m_inBus.subBus(in), \out, m_outBus.subBus(out)],m_patcherGroup);
+					m_patchers[in][out] = Synth(\sd_patcher, [\in, m_inBus.subBus(in), \out, m_outBus.subBus(out)],m_patcherGroup);
 				};
 			});
 		});
@@ -178,6 +189,21 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		m_inGroup.free;
 		m_outGroup.free;
 		m_patcherGroup.free;
+		m_patcherGroup = nil;
+		this.clearPatchers;
+	}
+
+	clearPatchers
+	{
+		if(m_patcherGroup != nil)
+		{
+			m_patcherGroup.freeAll;
+		};
+		m_patchers.size.do({ | in |
+			m_patchers[0].size.do({ | out |
+				m_patchers[in][out] = nil;
+			});
+		});
 	}
 
 	dumpControlBus {
