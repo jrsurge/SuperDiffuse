@@ -26,6 +26,10 @@ SuperDiffuse_MasterControl {
 		^m_controlFaders[i];
 	}
 
+	faders {
+		^m_controlFaders;
+	}
+
 	indexOf { | fader |
 		^m_controlFaders.indexOf(fader);
 	}

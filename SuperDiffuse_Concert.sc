@@ -14,6 +14,32 @@ SuperDiffuse {
 		});
 	}
 	*/
+
+	*load { | pathToSaveFile |
+		var dic, concert;
+
+		File.use(pathToSaveFile, "r", { | file |
+			dic = interpret(file.readAllString);
+		});
+
+		concert = SuperDiffuse_Concert(dic[\setupInfo][0], dic[\setupInfo][1], dic[\setupInfo][2]);
+
+		dic[\pieces].do({|pieceInfo|
+			concert.addPiece(SuperDiffuse_Piece(pieceInfo[0]).name_(pieceInfo[1]).matrixInd_(pieceInfo[2]));
+		});
+
+		// get rid of any existing matrices
+		concert.matrices.clear;
+
+		dic[\matrices].do({|matrixInfo|
+			concert.addMatrix(matrixInfo[0]);
+			concert.matrices.last.matrix = matrixInfo[1];
+		});
+
+		concert.loaded;
+
+		^concert;
+	}
 }
 
 SuperDiffuse_Concert : SuperDiffuse_Subject {
@@ -29,40 +55,36 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	}
 
 	ninit { | numIns, numOuts, numControls |
-		// We'll need to restart the Server with the right number of output channels..
-		Server.default.options.numOutputBusChannels_(numOuts);
-		Server.default.quit;
-		Server.default.waitForBoot({
-			// Once we're ready to go, initialise everything..
-			m_pieces = List();
-			m_outFaders = List();
+		m_pieces = List();
+		m_outFaders = List();
 
-			m_matrices = List();
+		m_matrices = List();
 
-			// We'll need to be able to talk to our patchers if we ever want to do proportional level sending
-			// i.e. multiple ins to single out
-			m_patchers = Array.fill(numIns, { Array.fill(numOuts, { nil } ) });
+		// We'll need to be able to talk to our patchers if we ever want to do proportional level sending
+		// i.e. multiple ins to single out
+		m_patchers = Array.fill(numIns, { Array.fill(numOuts, { nil } ) });
 
-			m_numIns = numIns;
-			m_numOuts = numOuts;
-			m_numControls = numControls;
+		m_numIns = numIns;
+		m_numOuts = numOuts;
+		m_numControls = numControls;
 
-			this.registerSynthDefs;
+		this.registerSynthDefs;
 
-			this.initBuses(numIns, numOuts);
-			this.initGroups;
-			this.initMatrix(numIns, numOuts);
+		this.initBuses(numIns, numOuts);
+		this.initGroups;
+		this.initMatrix(numIns, numOuts);
 
-			m_masterControl = SuperDiffuse_MasterControl(numControls);
-			m_numOuts.do({ | i |
-				m_outFaders.add(SuperDiffuse_OutFader(m_masterControl.fader(i%numControls), m_controlBus.subBus(i)));
-			});
-			m_concertGUI = SuperDiffuse_ConcertGUI(this);
-
-			("\n\n*** Welcome to SuperDiffuse ***\nCopyright(c) James Surgenor, 2016\nDeveloped at the University of Sheffield Sound Studios\n\n").postln;
-
-			Synth(\sd_outsynth,[\in, m_inBus, \control, m_controlBus], m_outGroup);
+		m_masterControl = SuperDiffuse_MasterControl(numControls);
+		m_numOuts.do({ | i |
+			m_outFaders.add(SuperDiffuse_OutFader(m_masterControl.fader(i%numControls), m_controlBus.subBus(i)));
 		});
+		m_concertGUI = SuperDiffuse_ConcertGUI(this);
+
+		("\n\n*** Welcome to SuperDiffuse ***\nCopyright(c) James Surgenor, 2016\nDeveloped at the University of Sheffield Sound Studios\n\n").postln;
+
+		Synth(\sd_outsynth,[\in, m_inBus, \control, m_controlBus], m_outGroup);
+
+		m_concertGUI.update;
 	}
 
 	registerSynthDefs {
@@ -208,6 +230,26 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 	dumpControlBus {
 		m_controlBus.get.postln;
+	}
+
+	createSaveFile { | path |
+		var dic;
+
+		dic = Dictionary();
+
+		dic.add(\setupInfo -> [m_numIns, m_numOuts, m_numControls]);
+		dic.add(\pieces -> m_pieces.collect({|piece| [piece.path, piece.name, piece.matrixInd] }));
+		dic.add(\matrices -> m_matrices.collect({|matrix| [matrix.name, matrix.matrix] }));
+		dic.add(\controlsConfig -> m_outFaders.collect({|outFader| m_masterControl.indexOf(outFader.subject)}));
+
+		File.use(path, "w", { | file |
+			file.write(dic.asCompileString);
+		});
+	}
+
+	loaded {
+		// should only be called from SuperDiffuse.load function - indicates we have loaded from a file and the first piece needs loading up..
+		m_concertGUI.ready;
 	}
 
 }

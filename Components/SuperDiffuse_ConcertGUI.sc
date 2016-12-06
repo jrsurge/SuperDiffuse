@@ -307,6 +307,11 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_rightLayout.add(m_parent.controls.gui,1);
 
 		m_rightLayout.add(Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders()}));
+		m_rightLayout.add(Button().states_([["Save Concert Configuration"]]).action_({
+			Dialog.savePanel({ | path |
+				m_parent.createSaveFile(path);
+			});
+		}));
 
 		m_rightLayout.add(m_sfView,3);
 
@@ -332,7 +337,10 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		var sel;
 		sel = m_piecesListView.selection[0];
 		m_piecesListView.items = m_parent.pieces.collect({|piece| piece.name});
-		m_piecesListView.value_(sel);
+		if(sel != nil)
+		{
+			m_piecesListView.value_(sel);
+		};
 	}
 
 	updateMatrices {
@@ -359,5 +367,9 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		this.updatePieces;
 		this.updateMatrices;
 		this.updateSFView;
+	}
+
+	ready {
+		m_piecesListView.valueAction_(0);
 	}
 }
