@@ -82,6 +82,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 						piece.matrixInd_(matrixMenu.value);
 						this.updatePieces;
 						caller.value_(sel);
+						m_matricesListView.valueAction_(piece.matrixInd);
+						this.updateMatrices;
 						win.close;
 					});
 
@@ -255,6 +257,12 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				{
 					m_parent.removeMatrix(m_parent.matrix(sel));
 					m_matricesListView.valueAction_(sel - 1);
+					m_parent.pieces.do({ | piece |
+						if(piece.matrixInd == sel)
+						{
+							piece.matrixInd = 0;
+						}
+					})
 				}
 				{
 					"Unable to remove initial matrix".warn;
