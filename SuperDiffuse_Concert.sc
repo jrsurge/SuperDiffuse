@@ -262,7 +262,6 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 	play { | index, start, end |
 		m_playingPiece = m_pieces[index];
-		m_playingPiece.postln;
 		m_playingPiece.play(start, end, m_inBus, m_inGroup);
 	}
 
