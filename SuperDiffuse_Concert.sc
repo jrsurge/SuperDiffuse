@@ -42,6 +42,10 @@ SuperDiffuse {
 			concert.matrices.last.matrix = matrixInfo[1];
 		});
 
+		dic[\controlsConfig].do({| controlAssignment, ind |
+			concert.assignControl(controlAssignment, ind);
+		});
+
 		concert.loaded;
 
 		^concert;
@@ -209,6 +213,10 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 		win.layout_(VLayout().add(scrollView));
 		win.front;
+	}
+
+	assignControl { | controlInd, faderInd |
+		m_outFaders[faderInd].changeSubject(m_masterControl.fader(controlInd));
 	}
 
 	clear {
