@@ -1,7 +1,13 @@
 /* Convenience wrapper */
 SuperDiffuse {
 	*new { | numIns, numOuts, numControls |
-		^SuperDiffuse_Concert(numIns,numOuts, numControls);
+		if(numOuts > Server.default.options.numOutputBusChannels)
+		{
+			Error("Server doesn't have enough output channels - update Server.default.options.numOutputBusChannels").throw;
+		}
+		{
+			^SuperDiffuse_Concert(numIns, numOuts, numControls);
+		}
 	}
 
 	/* Will eventually have a Builder to recreate concerts from saves
@@ -50,6 +56,8 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	var m_inGroup, m_patcherGroup, m_outGroup;
 	var m_concertGUI;
 
+	var m_playingPiece;
+
 	*new { | numIns, numOuts, numControls |
 		^super.new.ninit(numIns,numOuts,numControls);
 	}
@@ -82,7 +90,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 		("\n\n*** Welcome to SuperDiffuse ***\nCopyright(c) James Surgenor, 2016\nDeveloped at the University of Sheffield Sound Studios\n\n").postln;
 
-		Synth(\sd_outsynth,[\in, m_inBus, \control, m_controlBus], m_outGroup);
+		Synth(\sd_outsynth,[\in, m_outBus, \control, m_controlBus], m_outGroup);
 
 		m_concertGUI.update;
 	}
@@ -250,6 +258,26 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	loaded {
 		// should only be called from SuperDiffuse.load function - indicates we have loaded from a file and the first piece needs loading up..
 		m_concertGUI.ready;
+	}
+
+	play { | index, start, end |
+		m_playingPiece = m_pieces[index];
+		m_playingPiece.postln;
+		m_playingPiece.play(start, end, m_inBus, m_inGroup);
+	}
+
+	stop {
+		m_playingPiece.stop;
+	}
+
+	isPlaying {
+		if( m_playingPiece == nil)
+		{
+			^false;
+		}
+		{
+			^m_playingPiece.isPlaying;
+		};
 	}
 
 }

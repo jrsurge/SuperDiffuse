@@ -1,5 +1,6 @@
 SuperDiffuse_Piece {
-	var m_name, m_path, m_cuedBuffer, m_matrixInd;
+	var m_name, m_path, m_soundFile, m_matrixInd;
+	var m_playbackEv;
 
 	*new { | path |
 		^super.new.init(path);
@@ -9,9 +10,8 @@ SuperDiffuse_Piece {
 		m_name = path;
 		m_path = path;
 		m_matrixInd = 0;
-		SoundFile.use(path,{ | sf |
-			m_cuedBuffer = Buffer.cueSoundFile(Server.default, sf.path,numChannels:sf.numChannels);
-		});
+		m_soundFile = SoundFile(path);
+		m_soundFile.openRead();
 	}
 
 	name {
@@ -26,13 +26,25 @@ SuperDiffuse_Piece {
 		^m_path;
 	}
 
-	cuedBuffer {
-		^m_cuedBuffer;
+	play { | startPos, endPos, out, group |
+		if(m_playbackEv != nil)
+		{
+			if(m_playbackEv.isRunning)
+			{
+				m_playbackEv.stop;
+			};
+		};
+
+		m_playbackEv = m_soundFile.cue((firstFrame: startPos, lastFrame: endPos, out: out, group: group),true);
 	}
 
-	recue {
-		m_cuedBuffer.close;
-		m_cuedBuffer.cueSoundFile(m_path,m_cuedBuffer.numChannels);
+	isPlaying
+	{
+		^m_playbackEv.isRunning;
+	}
+
+	stop {
+		m_playbackEv.stop;
 	}
 
 	printOn { | stream |
@@ -44,7 +56,13 @@ SuperDiffuse_Piece {
 	}
 
 	== { | b |
-		^(this.path == b.path);
+		if(b.isKindOf(SuperDiffuse_Piece))
+		{
+			^(m_path == b.path);
+		}
+		{
+			^false;
+		};
 	}
 
 	matrixInd {

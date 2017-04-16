@@ -97,6 +97,16 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 					win.layout_(layout);
 					win.front;
 				};
+				if( (caller.selection[0] != nil) && (keycode == 32) )
+				{
+					if(m_parent.isPlaying)
+					{
+						this.stop;
+					}
+					{
+						this.play(caller.selection[0]);
+					};
+				}
 			};
 		});
 
@@ -290,16 +300,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		.peakColor_(Color.fromHexString("#FF6D00"))
 		.setSelectionColor(0,Color.fromHexString("#3F51B5"))
 		.keyDownAction_({ | caller, modifiers, unicode, keycode|
-			var start = caller.selections[0][0];
-			var range = caller.selections[0][1];
-
-			if(range == 0)
-			{
-				range = caller.numFrames - start;
-			};
-
 			case
-			{keycode == 32} { }//this.play(start, range);
+			{keycode == 32} { if(m_parent.isPlaying) { this.stop } { this.play }; }
 			{keycode == 13} { caller.timeCursorPosition_(0); caller.setSelection(0,[0,0]); }
 			;
 		});
@@ -323,7 +325,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_playbackControlsLayout.add(m_playStopButton);
 		m_playbackControlsLayout.add(m_forwardButton);
 
-		m_rightLayout.add(m_playbackControlsLayout);
+		//m_rightLayout.add(m_playbackControlsLayout);
 
 		m_mainLayout.add(m_rightLayout);
 		m_mainLayout.setStretch(m_rightLayout,1);
@@ -371,5 +373,29 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	ready {
 		m_piecesListView.valueAction_(0);
+	}
+
+	play { | index |
+		var start, range, end;
+
+		// if we don't provide an index, play whatever the listview is pointing at
+		if(index == nil)
+		{
+			index = m_piecesListView.value;
+		};
+
+		// only try to play something if there is something
+		if(index != nil)
+		{
+			start = m_sfView.selections[0][0];
+			if(m_sfView.selections[0][1] == 0) { range =  m_sfView.numFrames - start; } { range = m_sfView.selections[0][1]; };
+			end = start + range;
+
+			m_parent.play(index, start, end);
+		}
+	}
+
+	stop {
+		m_parent.stop;
 	}
 }
