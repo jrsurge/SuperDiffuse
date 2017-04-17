@@ -1,0 +1,9 @@
+(
+    \name: "SuperDiffuse",
+    \summary: "An n-Channel diffusion system",
+    \author: "James Surgenor",
+    \version: "1.0.0",
+    \organization: "University of Sheffield Sound Studios",
+    \since: "2016",
+    \url: "https://github.com/jrsurge/SuperDiffuse"
+)

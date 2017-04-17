@@ -10,7 +10,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 	var m_controlsConfigButton, m_saveButton;
 
 	var m_sfView;
-	var m_backButton, m_playStopButton, m_forwardButton;
+	//var m_backButton, m_playStopButton, m_forwardButton;
+	var m_playheadRoutine;
 
 	*new { | parent |
 		^super.new(parent).ninit(parent);
@@ -343,7 +344,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_mainLayout.add(m_rightLayout);
 		m_mainLayout.setStretch(m_rightLayout,1);
 
-		m_win.onClose_({ m_parent.clear; });
+		m_win.onClose_({ m_parent.clear; m_playheadRoutine.stop; SystemClock.clear; });
 
 		m_win.front;
 	}
@@ -409,6 +410,28 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		this.updateSFView;
 	}
 
+	updatePlayhead { | start, end |
+		if(m_playheadRoutine != nil)
+		{
+			m_playheadRoutine.stop;
+		};
+
+		m_sfView.timeCursorPosition_(start);
+
+		m_playheadRoutine = Routine({
+			var numFrames = end - start;
+
+			Server.default.latency.wait;
+
+			numFrames.do({
+				(1 / 44100).wait;
+				{m_sfView.timeCursorPosition_(m_sfView.timeCursorPosition + 1)}.defer;
+			});
+			{m_sfView.timeCursorPosition_(start)}.defer;
+		});
+		SystemClock.play(m_playheadRoutine);
+	}
+
 	ready {
 		m_piecesListView.valueAction_(0);
 	}
@@ -430,10 +453,14 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			end = start + range;
 
 			m_parent.play(index, start, end);
-		}
+			this.updatePlayhead(start,end);
+		};
+
 	}
 
 	stop {
 		m_parent.stop;
+		m_playheadRoutine.stop;
+		SystemClock.clear;
 	}
 }
