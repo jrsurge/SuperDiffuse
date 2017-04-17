@@ -3,9 +3,11 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	var m_win, m_mainLayout, m_leftLayout, m_piecesLayout, m_piecesButtonLayout, m_matricesLayout, m_matricesButtonLayout, m_rightLayout, m_playbackControlsLayout;
 
-	var m_piecesListView, m_piecesUpButton, m_piecesDownButton, m_piecesAddButton, m_piecesRemoveButton;
+	var m_piecesListView, m_pieceEditFunc, m_piecesUpButton, m_piecesDownButton, m_piecesAddButton, m_piecesRemoveButton;
 
-	var m_matricesListView, m_matrixAddButton, m_matrixRemoveButton;
+	var m_matricesListView, m_matrixEditFunc, m_matrixAddButton, m_matrixRemoveButton;
+
+	var m_controlsConfigButton, m_saveButton;
 
 	var m_sfView;
 	var m_backButton, m_playStopButton, m_forwardButton;
@@ -44,11 +46,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_win.layout_(m_mainLayout);
 
-		m_piecesListView = ListView().action_({ | lv |
-			this.updateSFView;
-			m_matricesListView.valueAction_(m_parent.pieces[lv.selection[0]].matrixInd);
-		})
-		.keyDownAction_({ | caller, modifiers, unicode, keycode |
+		m_pieceEditFunc = { | caller, modifiers, unicode, keycode |
 			if(caller.hasFocus)
 			{
 				if( (caller.selection[0] != nil) && (keycode == 101) )
@@ -108,7 +106,13 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 					};
 				}
 			};
-		});
+		};
+
+		m_piecesListView = ListView().action_({ | lv |
+			this.updateSFView;
+			m_matricesListView.valueAction_(m_parent.pieces[lv.selection[0]].matrixInd);
+		})
+		.keyDownAction_(m_pieceEditFunc);
 
 		m_piecesLayout.add(StaticText().string_("Pieces"),align:\center);
 		m_piecesLayout.add(m_piecesListView);
@@ -165,13 +169,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_leftLayout.add(m_piecesLayout);
 
-		m_matricesListView = ListView().action_({ | caller |
-			var sel;
-
-			sel =  caller.selection[0];
-			m_parent.loadMatrix(m_parent.matrix(sel));
-		})
-		.keyDownAction_({ | caller, modifiers, unicode, keycode |
+		m_matrixEditFunc = { | caller, modifiers, unicode, keycode |
 			if(caller.hasFocus)
 			{
 				if( (caller.selection[0] != nil) && (keycode == 101) )
@@ -242,7 +240,15 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 					win.front;
 				};
 			};
-		});
+		};
+
+		m_matricesListView = ListView().action_({ | caller |
+			var sel;
+
+			sel =  caller.selection[0];
+			m_parent.loadMatrix(m_parent.matrix(sel));
+		})
+		.keyDownAction_(m_matrixEditFunc);
 
 		m_matricesLayout.add(StaticText().string_("Matrices"),align:\center);
 		m_matricesLayout.add(m_matricesListView);
@@ -308,22 +314,29 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_rightLayout.add(m_parent.controls.gui,1);
 
-		m_rightLayout.add(Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders()}));
-		m_rightLayout.add(Button().states_([["Save Concert Configuration"]]).action_({
+		m_controlsConfigButton = Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders()});
+		m_saveButton = Button().states_([["Save Concert Configuration"]]).action_({
 			Dialog.savePanel({ | path |
 				m_parent.createSaveFile(path);
 			});
-		}));
+		});
+
+		m_rightLayout.add(m_controlsConfigButton);
+		m_rightLayout.add(m_saveButton);
+
+		m_rightLayout.add(Button().states_([["Lock Interface"],["Unlock Interface"]]).action_({ | caller | this.lockInterface(caller.value); }));
 
 		m_rightLayout.add(m_sfView,3);
 
-		m_backButton = Button().states_([["<"]]);
-		m_playStopButton = SuperDiffuse_PlayStopToggle();
-		m_forwardButton = Button().states_([[">"]]);
+		//m_backButton = Button().states_([["<"]]);
+		//m_playStopButton = SuperDiffuse_PlayStopToggle();
+		//m_forwardButton = Button().states_([[">"]]);
 
-		m_playbackControlsLayout.add(m_backButton);
-		m_playbackControlsLayout.add(m_playStopButton);
-		m_playbackControlsLayout.add(m_forwardButton);
+		//m_playbackControlsLayout.add(m_backButton);
+		//m_playbackControlsLayout.add(m_playStopButton);
+		//m_playbackControlsLayout.add(m_forwardButton);
+
+
 
 		//m_rightLayout.add(m_playbackControlsLayout);
 
@@ -333,6 +346,31 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_win.onClose_({ m_parent.clear; });
 
 		m_win.front;
+	}
+
+	lockInterface { | state |
+		var invState = 1 - state;
+
+		m_matricesListView.enabled_(invState);
+		m_matrixAddButton.enabled_(invState);
+		m_matrixRemoveButton.enabled_(invState);
+		m_piecesUpButton.enabled_(invState);
+		m_piecesDownButton.enabled_(invState);
+		m_piecesAddButton.enabled_(invState);
+		m_piecesRemoveButton.enabled_(invState);
+		m_controlsConfigButton.enabled_(invState);
+		m_saveButton.enabled_(invState);
+
+		if(state.asBoolean)
+		{
+			m_piecesListView.keyDownAction_({});
+			m_matricesListView.keyDownAction_({});
+
+		}
+		{
+			m_piecesListView.keyDownAction_(m_pieceEditFunc);
+			m_matricesListView.keyDownAction_(m_matrixEditFunc);
+		};
 	}
 
 	updatePieces {
