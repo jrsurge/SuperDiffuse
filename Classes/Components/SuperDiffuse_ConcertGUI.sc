@@ -423,9 +423,9 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 			Server.default.latency.wait;
 
-			numFrames.do({
-				(1 / 44100).wait;
-				{m_sfView.timeCursorPosition_(m_sfView.timeCursorPosition + 1)}.defer;
+			(numFrames/10).do({
+				(10 / 44100).wait;
+				{m_sfView.timeCursorPosition_(m_sfView.timeCursorPosition + 10)}.defer;
 			});
 			{m_sfView.timeCursorPosition_(start)}.defer;
 		});
