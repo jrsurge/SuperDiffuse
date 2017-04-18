@@ -105,13 +105,13 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 			Out.ar(out,sig * gain);
 		}).add;
 
-		SynthDef(\sd_outsynth,{ | in=0, control=0 |
+		SynthDef(\sd_outsynth,{ | in=0, control=0, masterLevel=1 |
 			var sig, amps;
 
 			sig = In.ar(in,m_numIns);
 			amps = In.kr(control, m_numOuts);
 
-			Out.ar(0, sig * amps);
+			Out.ar(0, sig * amps * masterLevel);
 		}).add;
 	}
 
@@ -285,6 +285,10 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		{
 			^m_playingPiece.isPlaying;
 		};
+	}
+
+	setMasterLevel { | level |
+		m_outGroup.set(\masterLevel, level);
 	}
 
 }

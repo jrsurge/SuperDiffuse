@@ -3,11 +3,13 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	var m_win, m_mainLayout, m_leftLayout, m_piecesLayout, m_piecesButtonLayout, m_matricesLayout, m_matricesButtonLayout, m_rightLayout, m_playbackControlsLayout;
 
-	var m_piecesListView, m_pieceEditFunc, m_piecesUpButton, m_piecesDownButton, m_piecesAddButton, m_piecesRemoveButton;
+	var m_piecesListView, m_pieceEditFunc, m_piecesUpButton, m_piecesDownButton, m_piecesAddButton, m_piecesRemoveButton, m_previousPiece;
 
 	var m_matricesListView, m_matrixEditFunc, m_matrixAddButton, m_matrixRemoveButton;
 
 	var m_controlsConfigButton, m_saveButton;
+
+	var m_masterVolumeSlider, m_masterVolumeNumberBox;
 
 	var m_sfView;
 	//var m_backButton, m_playStopButton, m_forwardButton;
@@ -109,9 +111,27 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			};
 		};
 
+		m_masterVolumeNumberBox = NumberBox().action_({ | caller |
+			m_parent.setMasterLevel(caller.value);
+			m_masterVolumeSlider.value_(caller.value);
+		});
+
+		m_masterVolumeSlider = Slider().orientation_(\horizontal).action_({ | caller |
+			m_masterVolumeNumberBox.valueAction_(caller.value);
+		});
+
 		m_piecesListView = ListView().action_({ | lv |
 			this.updateSFView;
 			m_matricesListView.valueAction_(m_parent.pieces[lv.selection[0]].matrixInd);
+			if(m_previousPiece == nil)
+			{
+				m_parent.pieces[0].masterLevel_(m_masterVolumeNumberBox.value);
+			}
+			{
+				m_parent.pieces[m_previousPiece].masterLevel_(m_masterVolumeNumberBox.value);
+			};
+			m_previousPiece = lv.selection[0];
+			m_masterVolumeNumberBox.valueAction_(m_parent.pieces[lv.selection[0]].masterLevel);
 		})
 		.keyDownAction_(m_pieceEditFunc);
 
@@ -326,6 +346,9 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_rightLayout.add(m_saveButton);
 
 		m_rightLayout.add(Button().states_([["Lock Interface"],["Unlock Interface"]]).action_({ | caller | this.lockInterface(caller.value); }));
+
+
+		m_rightLayout.add(HLayout(m_masterVolumeSlider, m_masterVolumeNumberBox).margins_([10,10,20,20]));
 
 		m_rightLayout.add(m_sfView,3);
 
