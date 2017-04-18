@@ -495,7 +495,10 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 	}
 
 	ready {
-		m_piecesListView.valueAction_(0);
+		if(m_piecesListView.items.size > 0)
+		{
+			m_piecesListView.valueAction_(0);
+		}
 	}
 
 	play { | index |
