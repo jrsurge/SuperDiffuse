@@ -94,7 +94,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 			Out.ar(out,sig * gain);
 		}).add;
 
-		SynthDef(\sd_outsynth,{ | in=0, control=0, masterLevel=1 |
+		SynthDef(\sd_outsynth,{ | in=0, control=0, masterLevel=0 |
 			var sig, amps;
 
 			sig = In.ar(in,m_numIns);
