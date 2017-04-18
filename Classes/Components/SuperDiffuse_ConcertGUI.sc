@@ -250,6 +250,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 							var numBox;
 
 							numBox = NumberBox()
+							.align_(\center)
 							.clipLo_(0)
 							.value_(tmpMatrix.matrix[in][out])
 							.action_({|caller|
