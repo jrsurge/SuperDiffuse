@@ -10,17 +10,6 @@ SuperDiffuse {
 		}
 	}
 
-	/* Will eventually have a Builder to recreate concerts from saves
-	Pseudo-code:
-	load{ | save |
-		var concert;
-		concert = SuperDiffuse_Concert(save[\numIns], save[\numOuts]);
-		save[\pieces].do({|piece|
-			concert.addPiece(piece);
-		});
-	}
-	*/
-
 	*load { | pathToSaveFile |
 		var dic, concert;
 
@@ -31,7 +20,7 @@ SuperDiffuse {
 		concert = SuperDiffuse_Concert(dic[\setupInfo][0], dic[\setupInfo][1], dic[\setupInfo][2]);
 
 		dic[\pieces].do({|pieceInfo|
-			concert.addPiece(SuperDiffuse_Piece(pieceInfo[0]).name_(pieceInfo[1]).matrixInd_(pieceInfo[2]));
+			concert.addPiece(SuperDiffuse_Piece(pieceInfo[0]).name_(pieceInfo[1]).matrixInd_(pieceInfo[2]).masterLevel_(pieceInfo[3]));
 		});
 
 		// get rid of any existing matrices
@@ -254,7 +243,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		dic = Dictionary();
 
 		dic.add(\setupInfo -> [m_numIns, m_numOuts, m_numControls]);
-		dic.add(\pieces -> m_pieces.collect({|piece| [piece.path, piece.name, piece.matrixInd] }));
+		dic.add(\pieces -> m_pieces.collect({|piece| [piece.path, piece.name, piece.matrixInd, piece.masterLevel] }));
 		dic.add(\matrices -> m_matrices.collect({|matrix| [matrix.name, matrix.matrix] }));
 		dic.add(\controlsConfig -> m_outFaders.collect({|outFader| m_masterControl.indexOf(outFader.subject)}));
 
