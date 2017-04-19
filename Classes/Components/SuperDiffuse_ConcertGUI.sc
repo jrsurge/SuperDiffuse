@@ -247,9 +247,49 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 					matrix.matrix.size.do({ | in |
 						matrix.matrix[0].size.do({ | out |
+							var numBox;
+
+							numBox = NumberBox()
+							.align_(\center)
+							.clipLo_(0)
+							.value_(tmpMatrix.matrix[in][out])
+							.action_({|caller|
+								tmpMatrix.matrix[in][out] = caller.value;
+
+								if(caller.value > 1)
+								{
+									caller.background_(Color.red);
+								}
+								{
+									if(caller.value > 0)
+									{
+										caller.background_(Color.green(1, caller.value));
+									}
+									{
+										caller.background_(Color.white);
+									};
+								};
+							})
+							.toolTip_("%:%".format(in+1, out+1));
+
+							if(tmpMatrix.matrix[in][out] > 1)
+							{
+								numBox.background_(Color.red);
+							}
+							{
+								if(tmpMatrix.matrix[in][out] > 0)
+								{
+									numBox.background_(Color.green(1,tmpMatrix.matrix[in][out]));
+								}
+								{
+									numBox.background_(Color.white);
+								};
+							};
+
+
 							matrixLayout.add(StaticText().string_("In%".format(in+1)).align_(\center), in+1, 0);
 							matrixLayout.add(StaticText().string_("Out%".format(out+1)).align_(\center), 0, out+1);
-							matrixLayout.add(SuperDiffuse_PatchToggle().value_(tmpMatrix.matrix[in][out]).action_({|caller| tmpMatrix.matrix[in][out] = caller.value; }).toolTip_("%:%".format(in+1, out+1)),in+1,out+1);
+							matrixLayout.add(numBox,in+1,out+1);
 						});
 					});
 
@@ -461,7 +501,10 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 	}
 
 	ready {
-		m_piecesListView.valueAction_(0);
+		if(m_piecesListView.items.size > 0)
+		{
+			m_piecesListView.valueAction_(0);
+		}
 	}
 
 	play { | index |

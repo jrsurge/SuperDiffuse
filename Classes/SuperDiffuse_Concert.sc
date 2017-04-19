@@ -94,7 +94,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 			Out.ar(out,sig * gain);
 		}).add;
 
-		SynthDef(\sd_outsynth,{ | in=0, control=0, masterLevel=1 |
+		SynthDef(\sd_outsynth,{ | in=0, control=0, masterLevel=0 |
 			var sig, amps;
 
 			sig = In.ar(in,m_numIns);
@@ -149,9 +149,10 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 		m_numIns.do({ | in |
 			m_numOuts.do({ | out |
-				if(matrix.matrix[in][out] == 1)
+				var amp = matrix.matrix[in][out];
+				if(amp > 0)
 				{
-					m_patchers[in][out] = Synth(\sd_patcher, [\in, m_inBus.subBus(in), \out, m_outBus.subBus(out)],m_patcherGroup);
+					m_patchers[in][out] = Synth(\sd_patcher, [\in, m_inBus.subBus(in), \out, m_outBus.subBus(out), \gain, amp],m_patcherGroup);
 				};
 			});
 		});
