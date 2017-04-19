@@ -391,7 +391,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		);
 
 
-		m_rightLayout.add(HLayout(m_masterVolumeSlider, m_masterVolumeNumberBox).margins_([10,10,20,20]));
+		m_rightLayout.add(HLayout(StaticText().string_("Master:"),m_masterVolumeSlider, m_masterVolumeNumberBox).margins_([10,10,20,20]));
 
 		m_rightLayout.add(m_sfView,3);
 
