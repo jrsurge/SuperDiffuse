@@ -35,6 +35,10 @@ SuperDiffuse {
 			concert.assignControl(controlAssignment, ind);
 		});
 
+		dic[\midiConfig].do({| conf, ind |
+			concert.assignMIDI(ind, conf[0], conf[1]);
+		});
+
 		concert.loaded;
 
 		^concert;
@@ -235,7 +239,6 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 		win.layout_(VLayout(scrollView, Button().states_([["OK"]]).action_({
 			config.do({ | info, ind |
-				info.postln;
 				m_masterControl.fader(ind).assignMIDI(info[0], info[1]);
 			});
 			win.close;
@@ -247,6 +250,10 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 	assignControl { | controlInd, faderInd |
 		m_outFaders[faderInd].changeSubject(m_masterControl.fader(controlInd));
+	}
+
+	assignMIDI { | ind, chan, cc |
+		m_masterControl.fader(ind).assignMIDI(chan, cc);
 	}
 
 	clear {
@@ -287,6 +294,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		dic.add(\pieces -> m_pieces.collect({|piece| [piece.path, piece.name, piece.matrixInd, piece.masterLevel] }));
 		dic.add(\matrices -> m_matrices.collect({|matrix| [matrix.name, matrix.matrix] }));
 		dic.add(\controlsConfig -> m_outFaders.collect({|outFader| m_masterControl.indexOf(outFader.subject)}));
+		dic.add(\midiConfig -> m_masterControl.faders.collect({|fader| [fader.midiChan, fader.midiCC]}));
 
 		File.use(path, "w", { | file |
 			file.write(dic.asCompileString);
