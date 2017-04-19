@@ -123,10 +123,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_piecesListView = ListView().action_({ | lv |
 			this.updateSFView;
 			m_matricesListView.valueAction_(m_parent.pieces[lv.selection[0]].matrixInd);
-			if(m_previousPiece == nil)
-			{
-				m_parent.pieces[0].masterLevel_(m_masterVolumeNumberBox.value);
-			}
+
+			if(m_previousPiece.notNil)
 			{
 				m_parent.pieces[m_previousPiece].masterLevel_(m_masterVolumeNumberBox.value);
 			};
