@@ -205,7 +205,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 		scrollCanvas.layout_(layout);
 
-		win.layout_(VLayout().add(scrollView));
+		win.layout_(VLayout(scrollView, Button().states_([["OK"]]).action_({win.close;})));
 		win.front;
 	}
 
@@ -230,7 +230,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		layout.add(StaticText().string_("MIDI CC"), 0, 2);
 
 		m_numControls.do({ | ind |
-			layout.add(StaticText().string_("Control Fader: " + (ind + 1)), ind + 1, 0);
+			layout.add(StaticText().string_("Control Fader: " + (ind + 1)).align_(\right), ind + 1, 0);
 			layout.add(NumberBox().clipLo_(0).clipHi_(127).value_(m_masterControl.fader(ind).midiChan).action_({ | caller | config[ind][0] = caller.value; }), ind + 1, 1);
 			layout.add(NumberBox().clipLo_(0).clipHi_(127).value_(m_masterControl.fader(ind).midiCC).action_({ | caller | config[ind][1] = caller.value; }), ind + 1, 2);
 		});

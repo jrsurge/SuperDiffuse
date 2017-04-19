@@ -19,7 +19,7 @@
 
 SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 
-	var  m_value, m_layout, m_slider, m_midiLearnButton, m_midiAssignButton, m_midiFunc, m_oscFunc;
+	var  m_value, m_layout, m_slider, m_midiLearnButton, m_midiFunc, m_oscFunc;
 	var m_chan, m_cc;
 
 	*new { | oscAddressPattern, midiChan=0, midiCC=0 |
@@ -86,41 +86,13 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 	prInitGUI {
 		m_layout.free;
 		m_slider.free;
-		m_midiLearnButton.free;
-		m_midiAssignButton.free;
+		//m_midiLearnButton.free;
 
 		m_layout = VLayout();
 		m_slider = Slider().maxWidth_(50).action_({|v| this.valueAction_(v.value)}).value_(this.value);
-		m_midiLearnButton = Button().maxWidth_(50).states_([["L"]]).action_({ this.learn; });
-		/*m_midiAssignButton = Button().maxWidth_(50).states_([["A"]]).action_({
-			var win, layout, cc, chan, ok;
-
-			win = Window("Assign MIDI");
-			layout = GridLayout();
-
-			cc = NumberBox().clipLo_(0).clipHi_(127).value_(m_cc);
-			chan = NumberBox().clipLo_(0).clipHi_(127).value_(m_chan);
-
-			ok = Button().states_([["OK"]]).action_({
-				this.assignMIDI(chan.value, cc.value);
-				m_chan = chan.value;
-				m_cc = cc.value;
-				win.close;
-			});
-
-			layout.add(StaticText().string_("Chan:"),0,0,\center);
-			layout.add(StaticText().string_("CC:"),0,1,\center);
-			layout.add(chan, 1, 0);
-			layout.add(cc, 1, 1);
-			layout.addSpanning(ok,2,0,1,2);
-
-			win.layout_(layout);
-			win.front;
-		});
-		*/
+		//m_midiLearnButton = Button().maxWidth_(50).states_([["L"]]).action_({ this.learn; });
 		m_layout.add(m_slider,align:\center);
-		m_layout.add(m_midiLearnButton);
-		//m_layout.add(m_midiAssignButton);
+		//m_layout.add(m_midiLearnButton);
 	}
 
 	gui {

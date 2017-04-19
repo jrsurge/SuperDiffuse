@@ -7,7 +7,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	var m_matricesListView, m_matrixEditFunc, m_matrixAddButton, m_matrixRemoveButton;
 
-	var m_controlsConfigButton, m_saveButton;
+	var m_controlsConfigButton, m_saveButton, m_midiConfigButton;
 
 	var m_masterVolumeSlider, m_masterVolumeNumberBox;
 
@@ -379,16 +379,16 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				m_parent.createSaveFile(path);
 			});
 		});
+		m_midiConfigButton = Button().states_([["Configure MIDI"]]).action_({m_parent.configureMIDI;});
 
-		m_rightLayout.add(m_controlsConfigButton);
-
-
-		m_rightLayout.add(Button().states_([["Configure MIDI"]]).action_({m_parent.configureMIDI;}));
-
-
-		m_rightLayout.add(m_saveButton);
-
-		m_rightLayout.add(Button().states_([["Lock Interface"],["Unlock Interface"]]).action_({ | caller | this.lockInterface(caller.value); }));
+		m_rightLayout.add(
+			HLayout(
+				m_controlsConfigButton,
+				m_midiConfigButton,
+				m_saveButton,
+				Button().states_([["Lock Interface"],["Unlock Interface"]]).action_({ | caller | this.lockInterface(caller.value); })
+			).margins_([10,10,20,20])
+		);
 
 
 		m_rightLayout.add(HLayout(m_masterVolumeSlider, m_masterVolumeNumberBox).margins_([10,10,20,20]));
@@ -426,6 +426,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_piecesAddButton.enabled_(invState);
 		m_piecesRemoveButton.enabled_(invState);
 		m_controlsConfigButton.enabled_(invState);
+		m_midiConfigButton.enabled_(invState);
 		m_saveButton.enabled_(invState);
 
 		if(state.asBoolean)
