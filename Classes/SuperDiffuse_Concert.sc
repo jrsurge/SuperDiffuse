@@ -204,6 +204,46 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		win.front;
 	}
 
+	configureMIDI {
+		var win, layout;
+		var scrollView, scrollCanvas;
+		var config;
+
+		win = Window("SuperDiffuse | Configure MIDI");
+
+		// [[chan, cc], ...]
+		config = Array.fill(m_numControls, { Array.fill(2, { 0 } ) });
+
+		scrollView = ScrollView();
+		scrollCanvas = View();
+
+		scrollView.canvas_(scrollCanvas);
+
+		layout = GridLayout();
+
+		layout.add(StaticText().string_("MIDI Chan"), 0, 1);
+		layout.add(StaticText().string_("MIDI CC"), 0, 2);
+
+		m_numControls.do({ | ind |
+			layout.add(StaticText().string_("Control Fader: " + (ind + 1)), ind + 1, 0);
+			layout.add(NumberBox().clipLo_(0).clipHi_(127).value_(m_masterControl.fader(ind).midiChan).action_({ | caller | config[ind][0] = caller.value; }), ind + 1, 1);
+			layout.add(NumberBox().clipLo_(0).clipHi_(127).value_(m_masterControl.fader(ind).midiCC).action_({ | caller | config[ind][1] = caller.value; }), ind + 1, 2);
+		});
+
+		scrollCanvas.layout_(layout);
+
+		win.layout_(VLayout(scrollView, Button().states_([["OK"]]).action_({
+			config.do({ | info, ind |
+				info.postln;
+				m_masterControl.fader(ind).assignMIDI(info[0], info[1]);
+			});
+			win.close;
+		})));
+
+		win.front;
+
+	}
+
 	assignControl { | controlInd, faderInd |
 		m_outFaders[faderInd].changeSubject(m_masterControl.fader(controlInd));
 	}

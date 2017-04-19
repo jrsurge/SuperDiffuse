@@ -343,6 +343,11 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		});
 
 		m_rightLayout.add(m_controlsConfigButton);
+
+
+		m_rightLayout.add(Button().states_([["Configure MIDI"]]).action_({m_parent.configureMIDI;}));
+
+
 		m_rightLayout.add(m_saveButton);
 
 		m_rightLayout.add(Button().states_([["Lock Interface"],["Unlock Interface"]]).action_({ | caller | this.lockInterface(caller.value); }));
