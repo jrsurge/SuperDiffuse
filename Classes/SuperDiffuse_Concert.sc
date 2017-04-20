@@ -231,8 +231,8 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 		m_numControls.do({ | ind |
 			layout.add(StaticText().string_("Control Fader: " + (ind + 1)).align_(\right), ind + 1, 0);
-			layout.add(NumberBox().clipLo_(0).clipHi_(127).value_(m_masterControl.fader(ind).midiChan).action_({ | caller | config[ind][0] = caller.value; }), ind + 1, 1);
-			layout.add(NumberBox().clipLo_(0).clipHi_(127).value_(m_masterControl.fader(ind).midiCC).action_({ | caller | config[ind][1] = caller.value; }), ind + 1, 2);
+			layout.add(NumberBox().clipLo_(0).clipHi_(127).action_({ | caller | config[ind][0] = caller.value; }).valueAction_(m_masterControl.fader(ind).midiChan), ind + 1, 1);
+			layout.add(NumberBox().clipLo_(0).clipHi_(127).action_({ | caller | config[ind][1] = caller.value; }).valueAction_(m_masterControl.fader(ind).midiCC), ind + 1, 2);
 		});
 
 		scrollCanvas.layout_(layout);
