@@ -1,0 +1,30 @@
+title:: 06-SummaryForConcerts
+summary:: TL/DR for the concert
+categories:: Quarks>SuperDiffuse
+related:: Overviews/SuperDiffuseOverview, Tutorials/05-LoadingSavingConcerts
+
+section::Overview
+What it's all about. Concerts. Below are the final pieces of information that might be useful (or links to previous stuff if you have skipped ahead)
+
+section::Starting fresh
+See: link::Tutorials/01-IntroductionToSuperDiffuse##Starting a new concert::
+
+section::Loading a Concert
+See: link::Tutorials/05-LoadingSavingConcerts#Loading Concerts#Loading concerts::
+
+section::Playing pieces
+See: link::Tutorials/04-ControlsInSuperDiffuse#Playing back pieces#Playing back pieces::
+warning::
+SuperDiffuse will stop playing automatically when it reaches the end - do not press spacebar to stop at the end or it will probably restart!
+::
+
+section::During rehearsals
+warning::
+Remember that the master volume will only be saved to the configuration file if you save the configuration file after it's set!
+
+It will remember when switching between pieces, but not reloading from a save file.
+::
+
+section::Locking the interface
+To avoid accidentally changing critical settings during concerts, the "Lock Interface" button will disable any editing functionality of the GUI.
+

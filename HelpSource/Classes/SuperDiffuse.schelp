@@ -1,0 +1,45 @@
+TITLE:: SuperDiffuse
+summary:: The interface for working with SuperDiffuse
+categories:: Quarks>SuperDiffuse
+related:: Classes/SuperDiffuse_Concert, Overviews/SuperDiffuseOverview
+
+DESCRIPTION::
+The interface for creating and loading SuperDiffuse_Concerts.
+
+This is the only class users are expected to interact with directly - see the link::Overviews/SuperDiffuseOverview##SuperDiffuse tutorial series for more information::
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Creates a new SuperDiffuse_Concert
+
+ARGUMENT:: numIns
+The maximum number of playback channels for pieces in the concert
+
+ARGUMENT:: numOuts
+The number of output channels
+
+ARGUMENT:: numControls
+The number of hardware control faders (either MIDI or OSC)
+
+returns:: a new SuperDiffuse_Concert
+
+METHOD:: load
+Loads an existing concert from a save file
+
+ARGUMENT:: pathToSaveFile
+The path to the save file
+
+returns:: a new SuperDiffuse_Concert using the settings from the save file
+
+
+INSTANCEMETHODS::
+
+
+EXAMPLES::
+
+code::
+// Creates a new SuperDiffuse concert with a maximum of 2 playback channels, 8 output channels, and 8 control faders
+SuperDiffuse(2,8,8);
+::

@@ -1,0 +1,31 @@
+title:: 02-Pieces in SuperDiffuse
+summary:: Using Pieces in SuperDiffuse
+categories:: Quarks>SuperDiffuse
+related:: Overviews/SuperDiffuseOverview, Tutorials/01-IntroductionToSuperDiffuse, Tutorials/03-MatricesInSuperDiffuse
+
+section::Overview
+Pieces in SuperDiffuse store references to soundfiles on the machine, the matrix the piece is associated with, and a configurable name to display in the piece list.
+
+section::Adding pieces
+warning::
+SuperDiffuse expects pieces to be interleaved files. Files must be interleaved before being added - because of the routing matrix, the order of channels in the interleave does not particularly matter, as long as it is accounted for when configuring the matrix.
+::
+To add a piece, press the [+] button in the Pieces section of the interface.
+A dialog box will open prompting you to locate a file. SuperDiffuse is configured to allow multiple pieces to be added at once, so shift- or ctrl- clicking will function as expected.
+
+
+section::Removing pieces
+To remove a piece from the concert, click to select it in the pieces list and press the [-] button.
+
+section::Swapping the order
+Pieces can be rearranged by selecting a piece in the list, and pressing the [^] or [v] buttons to move the piece up or down respectively.
+
+section::Editing piece information
+Once added, the information about a piece can be modified. It has a name and a matrix to load when it is selected. To access this Edit dialog, select a piece and press 'e' on the keyboard.
+
+note::Pressing 'e' (for edit) is a feature of SuperDiffuse - the same command is used to edit information about matrices.::
+
+image::piece-info-dialog.png::
+
+In this dialog you can rename a piece, as well as change the matrix it is associated with. Pressing "OK" will confirm these changes.
+note::Pressing "Cancel", or closing the dialog will discard any changes::

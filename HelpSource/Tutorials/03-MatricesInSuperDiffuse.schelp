@@ -1,0 +1,40 @@
+title:: 03-Matrices in SuperDiffuse
+summary:: Using Matrices in SuperDiffuse
+categories:: Quarks>SuperDiffuse
+related:: Overviews/SuperDiffuseOverview, Tutorials/02-PiecesInSuperDiffuse, Tutorials/04-ControlsInSuperDiffuse
+
+section::Overview
+Matrices are used to route the audio playing back from pieces to any number of output channels on the soundcard.
+
+By default, there is a "Default" matrix already in the list - this matrix will be used as the starting matrix for any new piece (until it is associated with something else), and it cannot be removed from the list.
+
+section::Editing matrix information
+As with pieces, selecting a matrix in the list and pressing 'e' will open the edit dialog:
+
+image::matrix-edit-dialog.png::
+
+The image above shows an 8x8 system, with a matrix to route a 2 channel piece equally between outputs - a standard stereo diffusion configuration.
+
+The values in the number boxes correspond to a scale factor of how much of the original audio is sent to the output: 0 being nothing and 1 being full-volume.
+
+
+warning::
+Values strong::cannot be negative:: (to avoid accidental phase-inversion), but they strong::can be greater than 1:: - the number box will turn red, but strong::it will use this value::.
+::
+
+note::
+The number boxes are configured to increase by 1 when the mouse-wheel is scrolled once - strong::using the mouse-wheel:: is a very quick way to configure matrices.
+::
+
+Pressing "OK" will apply the changes to this matrix. Pressing "Cancel", or closing the dialog will discard any changes.
+
+section::Adding matrices
+Pressing the [+] button in the matrices section of the interface will add a blank matrix called "Untitled" to the list. Select it, then edit it as described above.
+
+section::Removing matrices
+To remove a matrix, select it in the list and press the [-] button.
+
+note::
+You cannot remove the default matrix
+::
+

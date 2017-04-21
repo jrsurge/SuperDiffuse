@@ -1,0 +1,169 @@
+TITLE:: SuperDiffuse_Concert
+summary:: A SuperDiffuse Concert
+categories:: Quarks>SuperDiffuse
+related:: Classes/SuperDiffuse, Classes/SuperDiffuse_ConcertGUI, Classes/SuperDiffuse_Subject, Overviews/SuperDiffuseOverview
+
+DESCRIPTION::
+note::
+This is an internal class, part of the SuperDiffuse quark.
+
+The documentation here is only for reference. Use link::Classes/SuperDiffuse::
+::
+
+A representation of a diffusion concert - this is the core class for SuperDiffuse.
+
+SuperDiffuse uses a patch-bay system. Soundfiles playback onto an input bus, teletype::sd_patcher:: synths route from the input bus to an output bus, and an output synth sends the output bus (multiplied by a control bus of link::Classes/SuperDiffuse_OutFader:: values) to the hardware outputs of the soundcard.
+CLASSMETHODS::
+
+METHOD:: new
+Creates a new SuperDiffuse concert with the given information
+
+ARGUMENT:: numIns
+The maximum number of playback channels for pieces in the concert
+
+ARGUMENT:: numOuts
+The number of output channels
+
+ARGUMENT:: numControls
+The number of hardware control faders (either MIDI or OSC)
+
+
+INSTANCEMETHODS::
+
+METHOD:: assignMIDI
+Sets a given control fader to use MIDI with the given details
+
+ARGUMENT:: ind
+The control fader index (zero-referenced)
+
+ARGUMENT:: chan
+The MIDI Channel Number
+
+ARGUMENT:: cc
+The MIDI CC number
+
+
+METHOD:: configureOutFaders
+Opens the Configure Control Faders dialog
+
+PRIVATE:: ninit
+
+METHOD:: configureMIDI
+Opens the Configure MIDI dialog
+
+METHOD:: dumpControlBus
+Prints the values in the control bus
+note::For debugging::
+
+METHOD:: addMatrix
+Creates a new, empty matrix, using an internal master matrix as a template
+
+ARGUMENT:: name
+A string to set the initial name of the matrix
+
+METHOD:: clear
+Cleans up all the resources allocated by SuperDiffuse - pieces, matrices, groups
+
+METHOD:: createSaveFile
+Save the current configuration to a file
+
+ARGUMENT:: path
+Path to save location
+
+METHOD:: clearPatchers
+Clears the routing 'patch-bay'
+
+METHOD:: isPlaying
+Checks if there is a current piece, and if that piece is playing
+
+returns:: Boolean
+
+PRIVATE:: initMatrix
+
+PRIVATE:: registerSynthDefs
+
+METHOD:: play
+Plays a piece in the concert
+
+ARGUMENT:: index
+Index of the piece
+
+ARGUMENT:: start
+Start position (in samples)
+
+ARGUMENT:: end
+End position (in samples)
+
+METHOD:: controls
+Returns the MasterControl
+
+returns:: a link::Classes/SuperDiffuse_MasterControl::
+
+METHOD:: loadMatrix
+Loads a given matrix (creates teletype::sd_patcher:: synths)
+
+ARGUMENT:: matrix
+The matrix to load
+
+PRIVATE:: matrixMaster
+
+PRIVATE:: loaded
+
+METHOD:: addPiece
+Adds a piece to the concert
+
+ARGUMENT:: piece
+A link::Classes/SuperDiffuse_Piece::
+
+PRIVATE:: initBuses
+
+METHOD:: setMasterLevel
+Sets the global master level
+
+ARGUMENT:: level
+Gain value
+
+METHOD:: removeMatrix
+Removes a given matrix from the matrix list
+
+ARGUMENT:: matrix
+The matrix to remove
+
+METHOD:: assignControl
+Assigns a link::Classes/SuperDiffuse_ControlFader:: to set the value of a link::Classes/SuperDiffuse_OutFader::
+
+ARGUMENT:: controlInd
+The index of the link::Classes/SuperDiffuse_ControlFader:: (zero-referenced) to listen to
+
+ARGUMENT:: faderInd
+The index of the link::Classes/SuperDiffuse_OutFader:: to subscribe
+
+
+METHOD:: removePiece
+Removes a piece from the concert
+
+ARGUMENT:: piece
+The piece to remove
+
+METHOD:: matrix
+Get the matrix at index
+
+ARGUMENT:: index
+Index of matrix to retrieve (zero-referenced)
+
+returns:: a link::Classes/SuperDiffuse_Matrix::
+
+METHOD:: stop
+Stops the current piece if it's playing
+
+METHOD:: matrices
+Returns all the matrices owned by this concert
+
+returns:: an array of link::Classes/SuperDiffuse_Matrix::
+
+PRIVATE:: initGroups
+
+METHOD:: pieces
+Returns all the pieces owned by this concert
+
+returns:: an array of link::Classes/SuperDiffuse_Piece::

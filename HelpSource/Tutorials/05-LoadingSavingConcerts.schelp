@@ -1,0 +1,38 @@
+title:: 05-Loading/Saving Concerts in SuperDiffuse
+summary:: How to load and save concerts in SuperDiffuse
+categories:: Quarks>SuperDiffuse
+related:: Overviews/SuperDiffuseOverview, Tutorials/04-ControlsInSuperDiffuse, Tutorials/06-SummaryForConcerts
+section::Overview
+What use is a system to define concerts if it cannot save and load them again.
+
+subsection:: What is saved?
+
+Everything SuperDiffuse needs to know to recreate the concert:
+
+list::
+## The size of the system - e.g. 2x8x8
+## The details of each piece (order in concert is also retained) - file location, name, matrix association, master fader value
+## The details of each matrix - name, matrix values
+## Control Fader assignments - Out1 listens to control1 etc...
+## MIDI Configuration - MIDI Chan and CC for each Control Fader
+::
+
+section::Saving Concerts
+Pressing the "Save Concert Configuration" button will open a save prompt. Save this file somewhere sensible, and call it something appropriate.
+
+note::
+Although it does not matter, it is recommended to use the extension ".sdc" (SuperDiffuse Configuration).
+::
+
+section::Loading Concerts
+If we are loading an existing concert configuration, we do not instantiate SuperDiffuse in the normal way, we instead call:
+
+code::
+SuperDiffuse.load("/Path/To/SaveFile");
+::
+
+This will recreate the concert exactly as it was before.
+
+note::
+You cannot load a configuration inside a running instance - there is no "Load Concert Configuration" button for this reason.
+::

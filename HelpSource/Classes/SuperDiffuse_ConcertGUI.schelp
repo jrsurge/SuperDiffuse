@@ -1,0 +1,67 @@
+TITLE:: SuperDiffuse_ConcertGUI
+summary:: The GUI for SuperDiffuse_Concert
+categories:: Quarks>SuperDiffuse
+related:: Classes/SuperDiffuse_Concert, Classes/SuperDiffuse_Piece, Classes/SuperDiffuse_Matrix, Classes/SuperDiffuse_MasterControl
+
+DESCRIPTION::
+note::
+This is an internal class, part of the SuperDiffuse quark.
+
+The documentation here is only for reference. Use link::Classes/SuperDiffuse::
+::
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Creates a new GUI based on the parent link::Classes/SuperDiffuse_Concert::
+
+ARGUMENT:: parent
+The parent concert to attach to
+
+
+INSTANCEMETHODS::
+
+METHOD:: stop
+Stops the current playing piece (if there is one).
+
+METHOD:: updateSFView
+Tell the SoundFileView it needs to update
+
+METHOD:: play
+Plays the piece at the given index in the piece list
+
+ARGUMENT:: index
+Index of piece to play (zero-referenced).
+
+METHOD:: update
+Underlying concert data has been modified, update everything - called by the parent (Observer pattern - see link::Classes/SuperDiffuse_Observer::)
+
+METHOD:: updateMatrices
+Tell the matrix list the udnerlying matrices have changed, so it needs to update (Observer pattern)
+
+PRIVATE:: ninit
+
+METHOD:: lockInterface
+Enables/disables the editing functionality of the GUI - useful during concerts.
+
+ARGUMENT:: state
+Integer representing the lock state - 0 unlocked, 1 locked.
+
+METHOD:: ready
+Called by the parent concert to indicate loaded from save file, so load the first piece properly.
+
+METHOD:: updatePieces
+Tell the piece list the underlying pieces have changed, so it needs to update
+
+METHOD:: updatePlayhead
+Start the Routine that updates the playhead position in the SoundFileView
+warning::This should not be called directly - it is managed internally by the play and stop methods::
+
+ARGUMENT:: start
+Start position in samples (used for calculating how many times to move the playhead, and resetting playing when stopped)
+
+ARGUMENT:: end
+End position in samples (used for calculating how many times to move the playhead).
+
+PRIVATE:: initWindow

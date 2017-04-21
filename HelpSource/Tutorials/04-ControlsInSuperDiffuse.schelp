@@ -1,0 +1,81 @@
+title:: 04-Controls in SuperDiffuse
+summary:: Setting up Controls in SuperDiffuse
+categories:: Quarks>SuperDiffuse
+related:: Overviews/SuperDiffuseOverview, Tutorials/03-MatricesInSuperDiffuse, Tutorials/05-LoadingSavingConcerts
+
+section::Overview
+SuperDiffuse uses hidden 'soft' master faders to control the volume of each output channel. These soft-faders subscribe to the value of a 'real' control fader. This allows a single control fader to affect multiple master faders, enabling the creation of grouping (useful for when there are more output channels than control faders).
+
+The control faders (the number of which is set when starting SuperDiffuse), are displayed at the top of the interface.
+
+section::The Master Fader
+Below the configuration buttons is a Master fader. This is a global, soft-master to set the overall volume of the system. Although this is a global control, strong::each piece remembers the value they last used and automatically resets the value of this fader when reloaded.::
+
+note::
+Although this value is remembered between switching pieces, it will not be retained if the system is restarted unless the configuration is saved once the value is set. strong::Save the configuration after setting the master to remember it::
+::
+
+section::Mapping control faders to output faders
+Pressing the "Configure Control Faders" button will open the Controls Configuration dialog:
+
+image::controls-config-dialog.png::
+
+Above shows an 8 output, 8 controls configuration. The master for Out1 is set to listen to Control Fader 1, and so on.
+
+warning::
+Changes made here will apply immmediately - closing the window will not discard changes
+::
+
+note::
+SuperDiffuse will try and do a 1:1 mapping of controls to masters, but if there are more outputs than control faders, it will automatically wrap by default.
+
+e.g. 16 outputs, 8 controls: outs1-8 will listen to controls1-8 respectively, and outs9-16 will also listen to controls1-8 respectively - so moving control 1 will change out1 and out9.
+
+In general, you will most likely want to re-configure this yourself with some sort of grouping, but SuperDiffuse will not guess this for you.
+::
+
+section::Controlling from OSC
+Each control fader will automatically listen to OSC messages of the following form:
+
+teletype::
+/SuperDiffuse/Control/[x] [val]
+::
+
+where '[x]' is the control number, and '[val]' is the fader value (0-1).
+
+
+section::Controlling from MIDI
+warning::SuperDiffuse will initialise MIDI devices on startup - strong::connect all MIDI controllers before starting SuperDiffuse:: ::
+It is also possible to use MIDI CC to change control faders.
+
+Pressing the "Configure MIDI" will open the configuration dialog:
+
+image::midi-config-dialog.png::
+
+Here you can enter the MIDI Channel number and MIDI CC number in use for each control fader.
+
+Pressing "OK" will accept and apply the changes, pressing "Cancel" or closing the dialog will discard and changes.
+
+section::Playing back pieces
+This is seemingly the most important part of SuperDiffuse - playback. As is standard, the spacebar is used to start/stop playback, however it will only function if either the Pieces list has focus or the SoundFileView has focus. This is worth repeating in a warning box for anyone who only looks for scary boxes:
+
+warning::
+The Spacebar will only start/stop playback if the last interface object interacted with was the Pieces List, or the SoundFileView
+::
+
+The reasons for this are that the expected use is during a concert, or a rehearsal.
+
+subsection::During performance
+A performer will approach the system, click on their piece, and press spacebar.
+
+warning::
+Once the piece is over, there is no need to stop - SuperDiffuse will stop automatically, so pressing spacebar will most likely restart the piece
+::
+
+subsection::During rehearsal
+A new starting position, or section (click and drag to highlight) can be set by clicking in the SoundFileView, and pressing spacebar to start/stop. On restarting playback, it will begin from the last starting position: i.e. it will not resume, but restart.
+
+
+note::
+Clicking in the SoundFileView during playback will strong::not:: move the current playback position in the soundfile - it is for informational purposes only. strong::Stop playback before setting a new starting position.::
+::

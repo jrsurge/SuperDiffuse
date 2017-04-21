@@ -1,0 +1,50 @@
+title:: 01-Introduction to SuperDiffuse
+summary:: Getting started with SuperDiffuse
+categories:: Quarks>SuperDiffuse
+related:: Overviews/SuperDiffuseOverview, Tutorials/02-PiecesInSuperDiffuse
+
+section::Overview
+SuperDiffuse is an n-Channel diffusion system, created at the University of Sheffield Sound Studios to enable large-scale concerts of electroacoustic music.
+
+It is based on the idea of creating concerts for any size of loudspeaker orchestra, and allows for concerts with a mixture of piece formats containing any number of channels.
+
+You only need to describe your setup (the largest number of channels of playback, the number of outputs, and the number of control faders), and SuperDiffuse will do the rest.
+
+code::
+// SuperDiffuse(maxIns, numOuts, numControlFaders)
+SuperDiffuse(2, 8, 8);
+::
+
+The above code will create a system capable of playing back pieces with <= 2 channels, with 8 output channels, and 8 control faders - a small, stereo diffusion system (2x8).
+
+note::
+SuperDiffuse will fail to start if your SuperCollider server does not have enough output channels:
+code::
+// Something like this in your startup.scd
+Server.default.options.numOutputBusChannels_(8);
+Server.default.boot;
+::
+
+This number should be the number of outputs on your soundcard.
+::
+
+section::The single-window GUI
+SuperDiffuse uses a single-window interface:
+image::superdiffuseoverview.png::
+
+The three main sections are outlined below, and have their own tutorial pages:
+
+subsection::Pieces
+This is where you can add, remove, re-order, and setup the pieces in the concert.
+
+See: link::Tutorials/02-PiecesInSuperDiffuse##Pieces in SuperDiffuse::
+
+subsection::Matrices
+This is where you can add, remove, and setup the matrices used by the pieces.
+
+See: link::Tutorials/03-MatricesInSuperDiffuse##Matrices in SuperDiffuse::
+
+subsection::Control
+This is where the performance controls are configured, and playback is controlled.
+
+See: link::Tutorials/04-ControlsInSuperDiffuse##Controls in SuperDiffuse::
