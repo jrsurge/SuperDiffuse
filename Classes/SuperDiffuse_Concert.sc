@@ -104,7 +104,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 			sig = In.ar(in,m_numIns);
 			amps = In.kr(control, m_numOuts);
 
-			Out.ar(0, sig * amps * masterLevel);
+			Out.ar(0, sig * Lag.kr(amps) * masterLevel);
 		}).add;
 	}
 
