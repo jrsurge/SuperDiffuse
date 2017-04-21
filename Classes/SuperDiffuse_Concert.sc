@@ -237,12 +237,19 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 		scrollCanvas.layout_(layout);
 
-		win.layout_(VLayout(scrollView, Button().states_([["OK"]]).action_({
-			config.do({ | info, ind |
-				m_masterControl.fader(ind).assignMIDI(info[0], info[1]);
-			});
-			win.close;
-		})));
+		win.layout_(
+			VLayout(scrollView,
+				HLayout(
+					Button().states_([["Cancel"]]).action_({win.close;}),
+					Button().states_([["OK"]]).action_({
+						config.do({ | info, ind |
+							m_masterControl.fader(ind).assignMIDI(info[0], info[1]);
+						});
+						win.close;
+					})
+				)
+			)
+		);
 
 		win.front;
 
