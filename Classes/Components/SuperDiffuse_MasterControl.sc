@@ -17,7 +17,7 @@ SuperDiffuse_MasterControl {
 	prInitControlFaders {
 		m_numControls.do({ | i |
 			var cf;
-			cf = SuperDiffuse_ControlFader("/SuperDiffuse/Master/" ++ (i+1));
+			cf = SuperDiffuse_ControlFader("/SuperDiffuse/Control/" ++ (i+1));
 			m_controlFaders.add(cf);
 		});
 	}
