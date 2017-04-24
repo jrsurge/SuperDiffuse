@@ -445,7 +445,18 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		if(state.asBoolean)
 		{
-			m_piecesListView.keyDownAction_({});
+			m_piecesListView.keyDownAction_({ | caller, modifiers, unicode, keycode |
+				if( (caller.selection[0] != nil) && (keycode == 32) )
+				{
+					if(m_parent.isPlaying)
+					{
+						this.stop;
+					}
+					{
+						this.play(caller.selection[0]);
+					};
+				};
+			});
 			m_matricesListView.keyDownAction_({});
 
 		}
