@@ -3,7 +3,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	var m_win, m_mainLayout, m_leftLayout, m_piecesLayout, m_piecesButtonLayout, m_matricesLayout, m_matricesButtonLayout, m_rightLayout, m_playbackControlsLayout;
 
-	var m_piecesListView, m_pieceEditFunc, m_piecesUpButton, m_piecesDownButton, m_piecesAddButton, m_piecesRemoveButton, m_previousPiece;
+	var m_piecesListView, m_pieceEditFunc, m_piecesUpButton, m_piecesDownButton, m_piecesAddButton, m_piecesRemoveButton;
 
 	var m_matricesListView, m_matrixEditFunc, m_matrixAddButton, m_matrixRemoveButton;
 
@@ -114,6 +114,10 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_masterVolumeNumberBox = NumberBox().action_({ | caller |
 			m_parent.setMasterLevel(caller.value);
 			m_masterVolumeSlider.value_(caller.value);
+			if(m_piecesListView.selection[0] != nil)
+			{
+				m_parent.pieces[m_piecesListView.selection[0]].masterLevel_(caller.value);
+			}
 		});
 
 		m_masterVolumeSlider = Slider().orientation_(\horizontal).action_({ | caller |
@@ -124,12 +128,10 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			this.updateSFView;
 			m_matricesListView.valueAction_(m_parent.pieces[lv.selection[0]].matrixInd);
 
-			if(m_previousPiece.notNil)
+			if(lv.selection[0] != nil)
 			{
-				m_parent.pieces[m_previousPiece].masterLevel_(m_masterVolumeNumberBox.value);
+				m_masterVolumeNumberBox.valueAction_(m_parent.pieces[lv.selection[0]].masterLevel);
 			};
-			m_previousPiece = lv.selection[0];
-			m_masterVolumeNumberBox.valueAction_(m_parent.pieces[lv.selection[0]].masterLevel);
 		})
 		.keyDownAction_(m_pieceEditFunc);
 
@@ -160,10 +162,22 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_piecesAddButton = Button().states_([["+"]]).action_({
 			Dialog.openPanel({|v|
+				var sizeBefore, sizeAfter;
+
+				sizeBefore = m_parent.pieces.size;
+
 				v.do({ | path |
 					m_parent.addPiece(SuperDiffuse_Piece(path));
+
 				});
-			},multipleSelection:true)
+
+				sizeAfter = m_parent.pieces.size;
+
+				if((sizeBefore == 0) && (sizeAfter > 0))
+				{
+					m_piecesListView.valueAction_(0);
+				};
+			},multipleSelection:true);
 		});
 		m_piecesRemoveButton = Button().states_([["-"]]).action_({
 			var sel;
@@ -442,13 +456,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 	}
 
 	updatePieces {
-		var sel;
-		sel = m_piecesListView.selection[0];
 		m_piecesListView.items = m_parent.pieces.collect({|piece| piece.name});
-		if(sel != nil)
-		{
-			m_piecesListView.value_(sel);
-		};
 	}
 
 	updateMatrices {
