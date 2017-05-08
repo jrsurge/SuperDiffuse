@@ -382,13 +382,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		.timeCursorColor_(Color.fromHexString("#00C853"))
 		.rmsColor_(Color.fromHexString("#FF9800"))
 		.peakColor_(Color.fromHexString("#FF6D00"))
-		.setSelectionColor(0,Color.fromHexString("#3F51B5"))
-		.keyDownAction_({ | caller, modifiers, unicode, keycode|
-			case
-			{keycode == 32} { if(m_parent.isPlaying) { this.stop } { this.play }; }
-			{keycode == 13} { caller.timeCursorPosition_(0); caller.setSelection(0,[0,0]); }
-			;
-		});
+		.setSelectionColor(0,Color.fromHexString("#3F51B5"));
 
 		m_rightLayout.add(m_parent.controls.gui,1);
 
@@ -419,6 +413,12 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_mainLayout.add(m_sfView, 3);
 
 		m_win.onClose_({ m_parent.clear; m_playheadRoutine.stop; SystemClock.clear; });
+
+		m_win.view.keyDownAction_({ | caller, modifiers, unicode, keycode |
+			case
+			{keycode == 32} { if(m_parent.isPlaying) { this.stop } { this.play }; }
+			{keycode == 13} { m_sfView.timeCursorPosition_(0); m_sfView.setSelection(0,[0,0]); }
+		});
 
 		m_win.front;
 	}
