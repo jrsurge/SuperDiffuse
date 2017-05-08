@@ -551,5 +551,6 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_parent.stop;
 		m_playheadRoutine.stop;
 		SystemClock.clear;
+		m_sfView.timeCursorPosition_(m_sfView.selections[0][0]);
 	}
 }
