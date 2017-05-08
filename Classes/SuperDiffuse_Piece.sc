@@ -23,6 +23,10 @@ SuperDiffuse_Piece {
 		m_name = name;
 	}
 
+	sampleRate {
+		^m_soundFile.sampleRate;
+	}
+
 	path {
 		^m_path;
 	}

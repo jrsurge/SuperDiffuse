@@ -496,7 +496,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		this.updateSFView;
 	}
 
-	updatePlayhead { | start, end |
+	updatePlayhead { | start, end, sampleRate |
 		if(m_playheadRoutine != nil)
 		{
 			m_playheadRoutine.stop;
@@ -510,7 +510,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			Server.default.latency.wait;
 
 			(numFrames/10).do({
-				(10 / 44100).wait;
+				(10 / sampleRate).wait;
 				{m_sfView.timeCursorPosition_(m_sfView.timeCursorPosition + 10)}.defer;
 			});
 			{m_sfView.timeCursorPosition_(start)}.defer;
@@ -542,7 +542,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			end = start + range;
 
 			m_parent.play(index, start, end);
-			this.updatePlayhead(start,end);
+			this.updatePlayhead(start,end, m_parent.pieces[index].sampleRate);
 		};
 
 	}
