@@ -127,12 +127,16 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_piecesListView = ListView().action_({ | lv |
 			this.updateSFView;
+			this.stop;
 			m_matricesListView.valueAction_(m_parent.pieces[lv.selection[0]].matrixInd);
 
 			if(lv.selection[0] != nil)
 			{
 				m_masterVolumeNumberBox.valueAction_(m_parent.pieces[lv.selection[0]].masterLevel);
 			};
+
+			m_sfView.setSelection(0, [0,0]);
+			m_sfView.timeCursorPosition_(0);
 		})
 		.keyDownAction_(m_pieceEditFunc);
 
