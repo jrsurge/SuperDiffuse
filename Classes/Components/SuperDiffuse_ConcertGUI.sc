@@ -1,7 +1,7 @@
 SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 	var m_parent;
 
-	var m_win, m_mainLayout, m_leftLayout, m_piecesLayout, m_piecesButtonLayout, m_matricesLayout, m_matricesButtonLayout, m_rightLayout, m_playbackControlsLayout;
+	var m_win, m_mainLayout, m_topLayout, m_leftLayout, m_piecesLayout, m_piecesButtonLayout, m_matricesLayout, m_matricesButtonLayout, m_rightLayout, m_playbackControlsLayout;
 
 	var m_piecesListView, m_pieceEditFunc, m_piecesUpButton, m_piecesDownButton, m_piecesAddButton, m_piecesRemoveButton;
 
@@ -37,7 +37,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 
 		m_win = Window("SuperDiffuse | v.1", Rect(winX,winY,winWidth,winHeight));
-		m_mainLayout = HLayout();
+		m_mainLayout = VLayout();
+		m_topLayout = HLayout();
 		m_leftLayout = HLayout();
 		m_piecesLayout = VLayout();
 		m_matricesLayout = VLayout();
@@ -367,8 +368,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_leftLayout.add(m_matricesLayout);
 
 
-		m_mainLayout.add(m_leftLayout);
-		m_mainLayout.setStretch(m_leftLayout,0);
+		m_topLayout.add(m_leftLayout);
+		m_topLayout.setStretch(m_leftLayout,0);
 
 		m_sfView = SoundFileView()
 		.minWidth_(500)
@@ -407,22 +408,11 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_rightLayout.add(HLayout(StaticText().string_("Master:"),m_masterVolumeSlider, m_masterVolumeNumberBox).margins_([10,10,20,20]));
 
-		m_rightLayout.add(m_sfView,3);
+		m_topLayout.add(m_rightLayout);
+		m_topLayout.setStretch(m_rightLayout,2);
 
-		//m_backButton = Button().states_([["<"]]);
-		//m_playStopButton = SuperDiffuse_PlayStopToggle();
-		//m_forwardButton = Button().states_([[">"]]);
-
-		//m_playbackControlsLayout.add(m_backButton);
-		//m_playbackControlsLayout.add(m_playStopButton);
-		//m_playbackControlsLayout.add(m_forwardButton);
-
-
-
-		//m_rightLayout.add(m_playbackControlsLayout);
-
-		m_mainLayout.add(m_rightLayout);
-		m_mainLayout.setStretch(m_rightLayout,1);
+		m_mainLayout.add(m_topLayout);
+		m_mainLayout.add(m_sfView, 3);
 
 		m_win.onClose_({ m_parent.clear; m_playheadRoutine.stop; SystemClock.clear; });
 
