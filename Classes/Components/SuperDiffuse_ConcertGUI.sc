@@ -387,7 +387,14 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		.peakColor_(Color.fromHexString("#FF6D00"))
 		.setSelectionColor(0,Color.fromHexString("#3F51B5"))
 		.action_({ | caller |
-			m_clock.setTimeInSamples(caller.timeCursorPosition);
+			var posAtClick = caller.timeCursorPosition;
+			m_clock.setTimeInSamples(posAtClick);
+			if(m_parent.isPlaying)
+			{
+				this.stop;
+				m_sfView.setSelection(0, [posAtClick,0]);
+				this.play;
+			}
 		});
 
 		m_rightLayout.add(m_parent.controls.gui,1);
@@ -548,7 +555,6 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			m_parent.play(index, start, end);
 			this.updatePlayhead(start,end, m_parent.pieces[index].sampleRate);
 		};
-
 	}
 
 	stop {
