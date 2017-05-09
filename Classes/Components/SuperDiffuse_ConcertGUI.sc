@@ -11,6 +11,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	var m_masterVolumeSlider, m_masterVolumeNumberBox;
 
+	var m_clock;
+
 	var m_sfView;
 	//var m_backButton, m_playStopButton, m_forwardButton;
 	var m_playheadRoutine;
@@ -137,6 +139,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 			m_sfView.setSelection(0, [0,0]);
 			m_sfView.timeCursorPosition_(0);
+			m_clock.reset;
 		})
 		.keyDownAction_(m_pieceEditFunc);
 
@@ -382,7 +385,10 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		.timeCursorColor_(Color.fromHexString("#00C853"))
 		.rmsColor_(Color.fromHexString("#FF9800"))
 		.peakColor_(Color.fromHexString("#FF6D00"))
-		.setSelectionColor(0,Color.fromHexString("#3F51B5"));
+		.setSelectionColor(0,Color.fromHexString("#3F51B5"))
+		.action_({ | caller |
+			m_clock.setTimeInSamples(caller.timeCursorPosition);
+		});
 
 		m_rightLayout.add(m_parent.controls.gui,1);
 
@@ -403,8 +409,9 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			).margins_([10,10,20,20])
 		);
 
+		m_clock = SuperDiffuse_Clock();
 
-		m_rightLayout.add(HLayout(StaticText().string_("Master:"),m_masterVolumeSlider, m_masterVolumeNumberBox).margins_([10,10,20,20]));
+		m_rightLayout.add(HLayout(nil, m_clock.gui, nil, StaticText().string_("Master:"),m_masterVolumeSlider, m_masterVolumeNumberBox).margins_([10,10,20,20]));
 
 		m_topLayout.add(m_rightLayout);
 		m_topLayout.setStretch(m_rightLayout,2);
@@ -417,7 +424,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_win.view.keyDownAction_({ | caller, modifiers, unicode, keycode |
 			case
 			{keycode == 32} { if(m_parent.isPlaying) { this.stop } { this.play }; }
-			{keycode == 13} { m_sfView.timeCursorPosition_(0); m_sfView.setSelection(0,[0,0]); }
+			{keycode == 13} { m_sfView.timeCursorPosition_(0); m_clock.reset; m_sfView.setSelection(0,[0,0]); }
 		});
 
 		m_win.front;
@@ -503,11 +510,14 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 			Server.default.latency.wait;
 
+			m_clock.setSampleRate(sampleRate);
+
 			(numFrames/10).do({
 				(10 / sampleRate).wait;
 				{m_sfView.timeCursorPosition_(m_sfView.timeCursorPosition + 10)}.defer;
+				{m_clock.setTimeInSamples(m_sfView.timeCursorPosition)}.defer;
 			});
-			{m_sfView.timeCursorPosition_(start)}.defer;
+			{m_sfView.timeCursorPosition_(start); m_clock.setTimeInSamples(start); }.defer;
 		});
 		SystemClock.play(m_playheadRoutine);
 	}
@@ -546,5 +556,6 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_playheadRoutine.stop;
 		SystemClock.clear;
 		m_sfView.timeCursorPosition_(m_sfView.selections[0][0]);
+		m_clock.setTimeInSamples(m_sfView.timeCursorPosition);
 	}
 }
