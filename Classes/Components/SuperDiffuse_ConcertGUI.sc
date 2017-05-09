@@ -114,7 +114,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			};
 		};
 
-		m_masterVolumeNumberBox = NumberBox().action_({ | caller |
+		m_masterVolumeNumberBox = NumberBox().maxWidth_(50).action_({ | caller |
 			m_parent.setMasterLevel(caller.value);
 			m_masterVolumeSlider.value_(caller.value);
 			if(m_piecesListView.selection[0] != nil)
