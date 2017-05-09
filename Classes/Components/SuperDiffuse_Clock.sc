@@ -1,3 +1,15 @@
+/*
+**
+**  Clock
+**
+**  This is a wrapper around a number of samples that can return a StaticText in hh::mm::ss
+**  format for embedding in a Window
+**
+**  It can be ticked every sample, or multiple samples, but SuperDiffuse_ConcertGUI uses
+**  setTimeInSamples to synchronise with the SoundFileView timeCursor.
+**
+*/
+
 SuperDiffuse_Clock
 {
 	var samples, sampleRate;
@@ -34,10 +46,11 @@ SuperDiffuse_Clock
 
 	getString {
 		var h, m, s;
+		var totalSeconds = samples / sampleRate;
 
-		s = ((samples / sampleRate) % 60).floor;
-		m = ((samples / sampleRate) / 60 % 60).floor;
-		h = ((samples / sampleRate) / 60 / 60).floor;
+		s = (totalSeconds % 60).floor;
+		m = (totalSeconds / 60 % 60).floor;
+		h = (totalSeconds / 60 / 60).floor;
 
 		^"%:%:%".format(h.asString.padLeft(2,"0"),m.asString.padLeft(2,"0"),s.asString.padLeft(2,"0"));
 	}
