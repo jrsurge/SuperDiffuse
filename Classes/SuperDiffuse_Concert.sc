@@ -185,6 +185,8 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	configureOutFaders {
 		var win, layout;
 		var scrollView, scrollCanvas;
+		var toggles = List();
+		var ctrlConfig = m_outFaders.collect({|outFader| m_masterControl.indexOf(outFader.subject); });
 
 		win = Window("SuperDiffuse | Control Faders Configuration");
 
@@ -195,17 +197,61 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 		layout = GridLayout();
 
-		layout.add(StaticText().string_("Listens to:"), 0, 1);
-		m_outFaders.do({ | outFader, i |
-			layout.add(StaticText().string_("Out%".format(i+1)),i+1,0);
-			layout.add(PopUpMenu().items_((0..m_numControls-1)+1).action_({| caller |
-				m_outFaders[i].changeSubject(m_masterControl.fader(caller.value));
-			}).value_(m_masterControl.indexOf(outFader.subject)), i+1, 1);
+		m_numControls.do({ | ctrlInd |
+			var togglesPerControl = List();
+
+			layout.add(StaticText().string_("Control: " ++ (ctrlInd+1)), ctrlInd + 1, 0);
+
+			m_numOuts.do({ | outInd |
+				var pt;
+
+				pt = SuperDiffuse_PatchToggle().toolTip_("%:%".format(ctrlInd + 1, outInd + 1)).action_({ | caller |
+					var val = caller.value;
+					// update graphical view
+					toggles.do({| ctrl | ctrl[outInd].value_(0) });
+
+					toggles[ctrlInd][outInd].value_(val);
+
+					// actually change the value in the config
+					if(val != 0)
+					{
+						ctrlConfig[outInd] = ctrlInd;
+					}
+					{
+						ctrlConfig[outInd] = nil;
+					}
+				});
+
+				togglesPerControl.add(pt);
+
+				layout.add(StaticText().string_("Out" ++ (outInd + 1)), 0, outInd+1);
+				layout.add(pt, ctrlInd + 1, outInd + 1);
+			});
+			toggles.add(togglesPerControl);
 		});
+
+		// now that we've got out widgets, grab the current setup
+		ctrlConfig.do({| ctrl, out |
+			if(ctrl != nil)
+			{
+				toggles[ctrl][out].valueAction_(1);
+			}
+			{
+				toggles[out][out].valueAction_(0);
+			};
+		});
+
 
 		scrollCanvas.layout_(layout);
 
-		win.layout_(VLayout(scrollView, Button().states_([["OK"]]).action_({win.close;})));
+		win.layout_(VLayout(scrollView,
+			Button().states_([["OK"]]).action_({
+				ctrlConfig.do({| ctrl, out |
+					this.assignControl(ctrl, out);
+				});
+				win.close;
+			})
+		));
 		win.front;
 	}
 
@@ -250,13 +296,17 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 				)
 			)
 		);
-
 		win.front;
-
 	}
 
 	assignControl { | controlInd, faderInd |
-		m_outFaders[faderInd].changeSubject(m_masterControl.fader(controlInd));
+		if(controlInd != nil)
+		{
+			m_outFaders[faderInd].changeSubject(m_masterControl.fader(controlInd));
+		}
+		{
+			m_outFaders[faderInd].changeSubject(SuperDiffuse_OutFader.dummySubject);
+		};
 	}
 
 	assignMIDI { | ind, chan, cc |

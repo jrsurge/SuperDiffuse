@@ -15,10 +15,15 @@
 */
 
 SuperDiffuse_OutFader : SuperDiffuse_Observer {
+	classvar <dummySubject;
 	var m_controlBus;
 
 	*new { | controlFader, controlBus |
 		^super.new(controlFader).ninit(controlBus);
+	}
+
+	*initClass {
+		dummySubject = SuperDiffuse_Subject();
 	}
 
 	ninit { | controlBus |
