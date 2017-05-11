@@ -386,15 +386,15 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		.rmsColor_(Color.fromHexString("#FF9800"))
 		.peakColor_(Color.fromHexString("#FF6D00"))
 		.setSelectionColor(0,Color.fromHexString("#3F51B5"))
-		.action_({ | caller |
-			var posAtClick = caller.timeCursorPosition;
-			m_clock.setTimeInSamples(posAtClick);
+		.mouseUpAction_({ | caller |
 			if(m_parent.isPlaying)
 			{
 				this.stop;
-				m_sfView.setSelection(0, [posAtClick,0]);
 				this.play;
 			}
+			{
+				m_clock.setTimeInSamples(caller.timeCursorPosition);
+			};
 		});
 
 		m_rightLayout.add(m_parent.controls.gui,1);
@@ -426,7 +426,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_mainLayout.add(m_topLayout);
 		m_mainLayout.add(m_sfView, 3);
 
-		m_win.onClose_({ m_parent.clear; m_playheadRoutine.stop; SystemClock.clear; });
+		m_win.onClose_({ this.stop; m_parent.clear; });
 
 		m_win.view.keyDownAction_({ | caller, modifiers, unicode, keycode |
 			case
@@ -505,12 +505,15 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 	}
 
 	updatePlayhead { | start, end, sampleRate |
+		var playheadPos;
+
 		if(m_playheadRoutine != nil)
 		{
 			m_playheadRoutine.stop;
 		};
 
 		m_sfView.timeCursorPosition_(start);
+		playheadPos = start;
 
 		m_playheadRoutine = Routine({
 			var numFrames = end - start;
@@ -521,12 +524,14 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 			(numFrames/10).do({
 				(10 / sampleRate).wait;
-				{m_sfView.timeCursorPosition_(m_sfView.timeCursorPosition + 10)}.defer;
+				if(m_sfView.isClosed) { thisThread.stop; };
+				{m_sfView.timeCursorPosition_(playheadPos)}.defer;
 				{m_clock.setTimeInSamples(m_sfView.timeCursorPosition)}.defer;
+				playheadPos = playheadPos + 10;
 			});
 			{m_sfView.timeCursorPosition_(start); m_clock.setTimeInSamples(start); }.defer;
 		});
-		SystemClock.play(m_playheadRoutine);
+		m_playheadRoutine.play(SystemClock);
 	}
 
 	ready {
@@ -558,10 +563,15 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 	}
 
 	stop {
-		m_parent.stop;
-		m_playheadRoutine.stop;
-		SystemClock.clear;
-		m_sfView.timeCursorPosition_(m_sfView.selections[0][0]);
-		m_clock.setTimeInSamples(m_sfView.timeCursorPosition);
+		if(m_parent.isPlaying)
+		{
+			m_parent.stop;
+			m_playheadRoutine.stop;
+			SystemClock.clear;
+			{
+				m_sfView.timeCursorPosition_(m_sfView.selections[0][0]);
+				m_clock.setTimeInSamples(m_sfView.timeCursorPosition);
+			}.defer(0.01);
+		}
 	}
 }
