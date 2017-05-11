@@ -200,7 +200,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		m_numControls.do({ | ctrlInd |
 			var togglesPerControl = List();
 
-			layout.add(StaticText().string_("Control: " ++ (ctrlInd+1)), ctrlInd + 1, 0);
+			layout.add(StaticText().string_("Control: " ++ (ctrlInd+1)).align_(\right), ctrlInd + 1, 0, \center);
 
 			m_numOuts.do({ | outInd |
 				var pt;
@@ -224,7 +224,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 				togglesPerControl.add(pt);
 
-				layout.add(StaticText().string_("Out" ++ (outInd + 1)), 0, outInd+1);
+				layout.add(StaticText().string_("Out" ++ (outInd + 1)).align_(\center), 0, outInd+1, \center);
 				layout.add(pt, ctrlInd + 1, outInd + 1);
 			});
 			toggles.add(togglesPerControl);
@@ -245,12 +245,15 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		scrollCanvas.layout_(layout);
 
 		win.layout_(VLayout(scrollView,
-			Button().states_([["OK"]]).action_({
-				ctrlConfig.do({| ctrl, out |
-					this.assignControl(ctrl, out);
-				});
-				win.close;
-			})
+			HLayout(
+				Button().states_([["Cancel"]]).action_({win.close;}),
+				Button().states_([["OK"]]).action_({
+					ctrlConfig.do({| ctrl, out |
+						this.assignControl(ctrl, out);
+					});
+					win.close;
+				})
+			)
 		));
 		win.front;
 	}
