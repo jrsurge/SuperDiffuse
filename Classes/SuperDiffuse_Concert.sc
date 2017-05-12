@@ -101,7 +101,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		SynthDef(\sd_outsynth,{ | in=0, control=0, masterLevel=0 |
 			var sig, amps;
 
-			sig = In.ar(in,m_numIns);
+			sig = In.ar(in,m_numOuts);
 			amps = In.kr(control, m_numOuts);
 
 			Out.ar(0, sig * Lag.kr(amps) * masterLevel);
