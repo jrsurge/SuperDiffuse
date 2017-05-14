@@ -164,7 +164,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			{
 				m_parent.pieces.swap(sel,sel + 1);
 				this.updatePieces;
-				m_piecesListView.selection = sel + 1;
+				m_piecesListView.value = sel + 1;
 			};
 		});
 
