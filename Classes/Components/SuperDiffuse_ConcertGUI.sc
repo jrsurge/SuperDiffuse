@@ -386,15 +386,18 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		.rmsColor_(Color.fromHexString("#FF9800"))
 		.peakColor_(Color.fromHexString("#FF6D00"))
 		.setSelectionColor(0,Color.fromHexString("#3F51B5"))
-		.mouseUpAction_({ | caller |
-			if(m_parent.isPlaying)
+		.mouseUpAction_({ | caller, x, y, modifiers, buttonNumber |
+			if(buttonNumber == 0)
 			{
-				this.stop;
-				this.play;
+				if(m_parent.isPlaying)
+				{
+					this.stop;
+					this.play;
+				}
+				{
+					m_clock.setTimeInSamples(caller.timeCursorPosition);
+				};
 			}
-			{
-				m_clock.setTimeInSamples(caller.timeCursorPosition);
-			};
 		});
 
 		m_rightLayout.add(m_parent.controls.gui,1);
