@@ -52,10 +52,10 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_win.layout_(m_mainLayout);
 
-		m_pieceEditFunc = { | caller, modifiers, unicode, keycode |
+		m_pieceEditFunc = { | caller, char, modifiers, unicode, keycode, key |
 			if(caller.hasFocus)
 			{
-				if( (caller.selection[0] != nil) && (keycode == 101) )
+				if( (caller.selection[0] != nil) && (keycode == 69) && (modifiers.isCtrl))
 				{
 					var win, layout, nameLayout, textEdit, buttonLayout, okButton, cancelButton, matrixLayout, matrixMenu;
 					var sel, piece;
@@ -210,10 +210,10 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_leftLayout.add(m_piecesLayout);
 
-		m_matrixEditFunc = { | caller, modifiers, unicode, keycode |
+		m_matrixEditFunc = { | caller, char, modifiers, unicode, keycode, key |
 			if(caller.hasFocus)
 			{
-				if( (caller.selection[0] != nil) && (keycode == 101) )
+				if( (caller.selection[0] != nil) && (keycode == 69) && (modifiers.isCtrl))
 				{
 					var win, layout, fieldLayout, textEdit, buttonLayout, matrixLayout, okButton, cancelButton, matrixScrollView, matrixScrollCanvas;
 					var sel, matrix;
