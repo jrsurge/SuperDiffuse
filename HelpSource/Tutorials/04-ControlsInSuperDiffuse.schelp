@@ -22,10 +22,6 @@ image::controls-config-dialog.png::
 
 Above shows an 8 output, 8 controls configuration. The master for Out1 is set to listen to Control Fader 1, and so on.
 
-warning::
-Changes made here will apply immmediately - closing the window will not discard changes
-::
-
 note::
 SuperDiffuse will try and do a 1:1 mapping of controls to masters, but if there are more outputs than control faders, it will automatically wrap by default.
 
@@ -77,5 +73,5 @@ A new starting position, or section (click and drag to highlight) can be set by 
 
 
 note::
-Clicking in the SoundFileView during playback will strong::not:: move the current playback position in the soundfile - it is for informational purposes only. strong::Stop playback before setting a new starting position.::
+Clicking in the SoundFileView during playback will move the current playback position in the soundfile.
 ::
