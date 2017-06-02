@@ -13,13 +13,32 @@ SuperDiffuse(8,8,8);
 ```
 
 # Installation
-In SuperCollider, run:
+
+__SuperDiffuse uses SuperCollider, so you must have it installed first:__
+https://supercollider.github.io
+
+## Automatic:
+SuperDiffuse is written as a Quark, so __if you have Git installed__ (Windows users will need to manually install Git), run the following in SuperCollider:
 
 ```supercollider
 Quarks.install("https:/github.com/jrsurge/SuperDiffuse")
 ```
 
 Then restart SuperCollider (or just recompile the class library with `Ctrl/Cmd + Shift + L`).
+
+## Manual:
+* Download a release from Github:
+https://github.com/jrsurge/SuperDiffuse/releases
+
+* Unzip into a folder called `SuperDiffuse` (doesn't matter where, we'll move it soon)
+
+* In SuperCollider, go to: __File > Open user support directory__
+
+* If it doesn't already exist, make a folder called `Extensions`
+
+* Move the `SuperDiffuse` folder into the `Extensions` folder
+
+Then restart SuperCollider (or just recompile the class library with `Ctrl/Cmd + Shift + L`)
 
 # Running
 
