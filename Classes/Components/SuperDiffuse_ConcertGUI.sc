@@ -38,7 +38,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		winY = (screenHeight / 2 ) - (winHeight / 2);
 
 
-		m_win = Window("SuperDiffuse | v.1.1", Rect(winX,winY,winWidth,winHeight));
+		m_win = Window("SuperDiffuse | v.1.1.1", Rect(winX,winY,winWidth,winHeight));
 		m_mainLayout = VLayout();
 		m_topLayout = HLayout();
 		m_leftLayout = HLayout();
@@ -55,7 +55,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_pieceEditFunc = { | caller, char, modifiers, unicode, keycode, key |
 			if(caller.hasFocus)
 			{
-				if( (caller.selection[0] != nil) && (keycode == 69) && (modifiers.isCtrl))
+				if( (caller.selection[0] != nil) && (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd))
 				{
 					var win, layout, nameLayout, textEdit, buttonLayout, okButton, cancelButton, matrixLayout, matrixMenu;
 					var sel, piece;
@@ -101,7 +101,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 					win.layout_(layout);
 					win.front;
 				};
-				if( (caller.selection[0] != nil) && (keycode == 32) )
+				if( (caller.selection[0] != nil) && (key == 0x20) )
 				{
 					if(m_parent.isPlaying)
 					{
@@ -213,7 +213,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_matrixEditFunc = { | caller, char, modifiers, unicode, keycode, key |
 			if(caller.hasFocus)
 			{
-				if( (caller.selection[0] != nil) && (keycode == 69) && (modifiers.isCtrl))
+				if( (caller.selection[0] != nil) && (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd))
 				{
 					var win, layout, fieldLayout, textEdit, buttonLayout, matrixLayout, okButton, cancelButton, matrixScrollView, matrixScrollCanvas;
 					var sel, matrix;
@@ -320,6 +320,18 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 					win.layout_(layout);
 					win.front;
 				};
+				{
+					if( (caller.selection[0] != nil) && (key == 0x20))
+					{
+						if(m_parent.isPlaying)
+						{
+							this.stop;
+						}
+						{
+							this.play(caller.selection[0]);
+						};
+					}
+				}
 			};
 		};
 
