@@ -44,7 +44,7 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 	// They are scaled here to have an exponential response
 	value_ { | v |
 		m_value = v.pow(2);
-		AppClock.sched(0,{m_slider.value_(m_value)});
+		AppClock.sched(0,{m_slider.value_(v)});
 	}
 
 	valueAction_ { | v |
@@ -91,6 +91,7 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 		//m_midiLearnButton.free;
 
 		m_layout = VLayout();
+		// Slider displays linearly, but values are actually exponential - this stops graphical 'slipping' when moving manually
 		m_slider = Slider().maxWidth_(50).action_({|v| this.valueAction_(v.value)}).value_(this.value);
 		//m_midiLearnButton = Button().maxWidth_(50).states_([["L"]]).action_({ this.learn; });
 		m_layout.add(m_slider,align:\center);
