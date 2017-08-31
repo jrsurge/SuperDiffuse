@@ -40,9 +40,11 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 		^m_value;
 	}
 
+	// Values should be between 0-1
+	// They are scaled here to have an exponential response
 	value_ { | v |
-		m_value = v;
-		AppClock.sched(0,{m_slider.value_(v)});
+		m_value = v.pow(2);
+		AppClock.sched(0,{m_slider.value_(m_value)});
 	}
 
 	valueAction_ { | v |
@@ -52,7 +54,7 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 
 	assignMIDI { | midiChan, midiCC |
 		m_midiFunc.free;
-		m_midiFunc = MIDIFunc.cc({|val| this.valueAction_((val/127).pow(2));}, midiCC, midiChan);
+		m_midiFunc = MIDIFunc.cc({|val| this.valueAction_((val/127));}, midiCC, midiChan);
 
 		m_chan = midiChan;
 		m_cc = midiCC;
