@@ -9,7 +9,7 @@ Matrices are used to route the audio playing back from pieces to any number of o
 By default, there is a "Default" matrix already in the list - this matrix will be used as the starting matrix for any new piece (until it is associated with something else), and it cannot be removed from the list.
 
 section::Editing matrix information
-As with pieces, selecting a matrix in the list and pressing 'e' will open the edit dialog:
+As with pieces, selecting a matrix in the list and pressing strong::Ctrl + e:: will open the edit dialog:
 
 image::matrix-edit-dialog.png::
 

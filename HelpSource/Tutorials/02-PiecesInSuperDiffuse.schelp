@@ -21,9 +21,9 @@ section::Swapping the order
 Pieces can be rearranged by selecting a piece in the list, and pressing the [^] or [v] buttons to move the piece up or down respectively.
 
 section::Editing piece information
-Once added, the information about a piece can be modified. It has a name and a matrix to load when it is selected. To access this Edit dialog, select a piece and press 'e' on the keyboard.
+Once added, the information about a piece can be modified. It has a name and a matrix to load when it is selected. To access this Edit dialog, select a piece and press strong::Ctrl + e:: on the keyboard.
 
-note::Pressing 'e' (for edit) is a feature of SuperDiffuse - the same command is used to edit information about matrices.::
+note::Pressing strong::Ctrl + e:: (for edit) is a feature of SuperDiffuse - the same command is used to edit information about matrices.::
 
 image::piece-info-dialog.png::
 
