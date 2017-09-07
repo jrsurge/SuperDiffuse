@@ -38,7 +38,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		winY = (screenHeight / 2 ) - (winHeight / 2);
 
 
-		m_win = Window("SuperDiffuse | v.1.1.1", Rect(winX,winY,winWidth,winHeight));
+		m_win = Window("SuperDiffuse | v.1.2.0", Rect(winX,winY,winWidth,winHeight));
 		m_mainLayout = VLayout();
 		m_topLayout = HLayout();
 		m_leftLayout = HLayout();
