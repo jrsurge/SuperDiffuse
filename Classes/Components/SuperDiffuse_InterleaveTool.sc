@@ -84,6 +84,10 @@ SuperDiffuse_InterleaveToolGUI
 		window.front;
 	}
 
+	close {
+		window.close;
+	}
+
 	update {
 		if(listView.isClosed != true)
 		{
@@ -96,6 +100,8 @@ SuperDiffuse_InterleaveTool
 {
 	var m_paths;
 	var m_gui;
+	var <>onInterleave;
+	var m_outPath;
 
 	*new {
 		^super.new.init;
@@ -157,6 +163,7 @@ SuperDiffuse_InterleaveTool
 		{
 			Dialog.savePanel({ | file |
 				outPath = file;
+				m_outPath = outPath;
 
 				// make sure they all have the same numFrames and numChannels
 				SoundFile.use(m_paths[0], { | sf |
@@ -203,8 +210,16 @@ SuperDiffuse_InterleaveTool
 
 				inFiles.do(_.close); // close all the inFiles
 				outFile.close; // close the outFile
+
+				onInterleave.(this);
+
+				m_gui.close;
 			});
 		}
+	}
+
+	outPath {
+		^m_outPath;
 	}
 
 	gui {
