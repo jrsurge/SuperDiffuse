@@ -3,7 +3,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	var m_win, m_mainLayout, m_topLayout, m_leftLayout, m_piecesLayout, m_piecesButtonLayout, m_matricesLayout, m_matricesButtonLayout, m_rightLayout, m_playbackControlsLayout;
 
-	var m_piecesListView, m_pieceEditFunc, m_piecesUpButton, m_piecesDownButton, m_piecesAddButton, m_piecesRemoveButton;
+	var m_piecesListView, m_pieceEditFunc, m_piecesUpButton, m_piecesDownButton, m_piecesAddButton, m_piecesAddInterleaveButton, m_piecesRemoveButton;
 
 	var m_matricesListView, m_matrixEditFunc, m_matrixAddButton, m_matrixRemoveButton;
 
@@ -187,6 +187,28 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				};
 			},multipleSelection:true);
 		});
+
+		m_piecesAddInterleaveButton = Button().states_([["++"]]).action_({
+			var interleaveTool = SuperDiffuse_InterleaveTool();
+			var sizeBefore, sizeAfter;
+
+			sizeBefore = m_parent.pieces.size;
+
+			// register onInterleave callback
+			interleaveTool.onInterleave_({ | interleaveTool |
+				m_parent.addPiece(SuperDiffuse_Piece(interleaveTool.outPath));
+
+				sizeAfter = m_parent.pieces.size;
+
+				if((sizeBefore == 0) && (sizeAfter > 0))
+				{
+					m_piecesListView.valueAction_(0);
+				};
+			});
+
+			interleaveTool.gui;
+		});
+
 		m_piecesRemoveButton = Button().states_([["-"]]).action_({
 			var sel;
 			sel = m_piecesListView.selection[0];
@@ -204,6 +226,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_piecesButtonLayout.add(m_piecesUpButton);
 		m_piecesButtonLayout.add(m_piecesDownButton);
 		m_piecesButtonLayout.add(m_piecesAddButton);
+		m_piecesButtonLayout.add(m_piecesAddInterleaveButton);
 		m_piecesButtonLayout.add(m_piecesRemoveButton);
 
 		m_piecesLayout.add(m_piecesButtonLayout);
@@ -461,6 +484,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_piecesUpButton.enabled_(invState);
 		m_piecesDownButton.enabled_(invState);
 		m_piecesAddButton.enabled_(invState);
+		m_piecesAddInterleaveButton.enabled_(invState);
 		m_piecesRemoveButton.enabled_(invState);
 		m_controlsConfigButton.enabled_(invState);
 		m_midiConfigButton.enabled_(invState);
