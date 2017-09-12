@@ -196,7 +196,7 @@ SuperDiffuse_InterleaveTool
 				writeBuffer = FloatArray.newClear(blockSize * m_paths.size);
 
 				outFile = SoundFile();
-				outFile.headerFormat_(headerFormat);
+				outFile.headerFormat_("CAF");
 				outFile.sampleFormat_(sampleFormat);
 				outFile.numChannels_(m_paths.size);
 				outFile.openWrite(outPath);
