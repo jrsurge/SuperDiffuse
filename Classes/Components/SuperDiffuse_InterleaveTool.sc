@@ -68,7 +68,7 @@ SuperDiffuse_InterleaveToolGUI
 
 		layout.add(HLayout(addButton, removeButton, upButton, downButton));
 
-		layout.add(Button().states_([["Interleave"]]).action_({ parent.interleave; }));
+		layout.add(Button().states_([["Interleave"]]).action_({ Dialog.savePanel({ | outPath | parent.interleave(outPath) }); }));
 
 		window.layout_(layout);
 
@@ -101,7 +101,6 @@ SuperDiffuse_InterleaveTool
 	var m_paths;
 	var m_gui;
 	var <>onInterleave;
-	var m_outPath;
 
 	*new {
 		^super.new.init;
@@ -134,92 +133,17 @@ SuperDiffuse_InterleaveTool
 	}
 
 	// Perform the interleave
-	interleave {
-		var blockSize, numBlocks, tailBlockSize;
-		var writeBuffer;
-		var frameCheck;
-		var inFiles, outPath, outFile;
-		var headerFormat, sampleFormat;
-
-		var processBlock = { | blockSize |
-			var tmpBuffer = FloatArray.newClear(blockSize);
-			inFiles.do({ | sf, chan |
-				sf.readData(tmpBuffer);
-				blockSize.do({ | frame |
-					writeBuffer[frame * inFiles.size + chan] = tmpBuffer[frame];
-				});
-			});
-			outFile.writeData(writeBuffer);
-		};
-
-		blockSize = 512;
-		numBlocks = 0;
-		tailBlockSize = 0;
-
-		inFiles = List();
+	interleave { | outPath |
+		outPath = outPath.dirname +/+ PathName(outPath).fileNameWithoutExtension ++ ".caf";
 
 		// if we have any files
 		if(m_paths.size > 0)
 		{
-			Dialog.savePanel({ | file |
-				outPath = file;
-				m_outPath = outPath;
+			var cmdString = SuperDiffuse.helpersDir +/+ "sd-interleave" + outPath.quote;
+			m_paths.do({|p| cmdString = cmdString + p.quote; });
 
-				// make sure they all have the same numFrames and numChannels
-				SoundFile.use(m_paths[0], { | sf |
-					frameCheck = sf.numFrames;
-					headerFormat = sf.headerFormat;
-					sampleFormat = sf.sampleFormat;
-
-					numBlocks = (frameCheck / blockSize).floor;
-					tailBlockSize = frameCheck - (numBlocks * blockSize);
-				});
-
-				m_paths.do({ | path |
-					var sf = SoundFile();
-
-					sf.openRead(path);
-
-					if(sf.numChannels != 1)
-					{
-						Error("Cannot interleave with multichannel file").throw;
-					};
-					if(sf.numFrames != frameCheck)
-					{
-						Error("Frame count mismatch - cannot interleave").throw;
-					};
-
-					// if we succeed, add to list
-					inFiles.add(sf);
-				});
-
-				writeBuffer = FloatArray.newClear(blockSize * m_paths.size);
-
-				outFile = SoundFile();
-				outFile.headerFormat_("CAF");
-				outFile.sampleFormat_(sampleFormat);
-				outFile.numChannels_(m_paths.size);
-				outFile.openWrite(outPath);
-
-				numBlocks.do({
-					processBlock.(blockSize);
-				});
-
-				// process final block
-				processBlock.(tailBlockSize);
-
-				inFiles.do(_.close); // close all the inFiles
-				outFile.close; // close the outFile
-
-				onInterleave.(this);
-
-				m_gui.close;
-			});
+			cmdString.unixCmd({ {onInterleave.value(outPath)}.defer; m_gui.close; });
 		}
-	}
-
-	outPath {
-		^m_outPath;
 	}
 
 	gui {

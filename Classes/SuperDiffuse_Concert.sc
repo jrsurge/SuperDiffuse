@@ -10,6 +10,13 @@ SuperDiffuse {
 		}
 	}
 
+	*initClass {
+		if(PathName(SuperDiffuse.helpersDir).isFolder == false)
+		{
+			PathName(SuperDiffuse.helpersDir).fullPath.mkdir;
+		}
+	}
+
 	*load { | pathToSaveFile |
 		var dic, concert;
 
@@ -42,6 +49,14 @@ SuperDiffuse {
 		concert.loaded;
 
 		^concert;
+	}
+
+	*helpersDir {
+		^Platform.userAppSupportDir.dirname +/+ "SuperDiffuse";
+	}
+
+	*openHelpersDir {
+		SuperDiffuse.helpersDir.openOS;
 	}
 }
 

@@ -195,8 +195,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			sizeBefore = m_parent.pieces.size;
 
 			// register onInterleave callback
-			interleaveTool.onInterleave_({ | interleaveTool |
-				m_parent.addPiece(SuperDiffuse_Piece(interleaveTool.outPath));
+			interleaveTool.onInterleave_({ | interleavedPath |
+				m_parent.addPiece(SuperDiffuse_Piece(interleavedPath));
 
 				sizeAfter = m_parent.pieces.size;
 
