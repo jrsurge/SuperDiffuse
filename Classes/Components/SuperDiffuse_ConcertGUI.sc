@@ -7,7 +7,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	var m_matricesListView, m_matrixEditFunc, m_matrixAddButton, m_matrixRemoveButton;
 
-	var m_controlsConfigButton, m_saveButton, m_midiConfigButton;
+	var m_controlsConfigButton, m_saveButton, m_midiConfigButton, m_filterConfigButton;
 
 	var m_masterVolumeSlider, m_masterVolumeNumberBox;
 
@@ -57,7 +57,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			{
 				if( (caller.selection[0] != nil) && (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd))
 				{
-					var win, layout, nameLayout, textEdit, buttonLayout, okButton, cancelButton, matrixLayout, matrixMenu;
+					var win, layout, nameLayout, textEdit, buttonLayout, okButton, cancelButton, matrixLayout, matrixMenu, filterLayout, filterMenu;
 					var sel, piece;
 
 					sel = caller.selection[0];
@@ -67,6 +67,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 					layout = VLayout();
 					nameLayout = HLayout();
 					matrixLayout = HLayout();
+					filterLayout = HLayout();
 					buttonLayout = HLayout();
 
 					nameLayout.add(StaticText().string_("Name: "));
@@ -78,12 +79,18 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 					matrixLayout.add(matrixMenu);
 
+					filterLayout.add(StaticText().string_("Filter Set:"));
+					filterMenu = PopUpMenu().items_(m_parent.filterManager.names).value_(piece.filterInd);
+					filterLayout.add(filterMenu);
+
 					cancelButton = Button().states_([["Cancel"]]).action_({
 						win.close;
 					});
 					okButton = Button().states_([["OK"]]).action_({
 						piece.name_(textEdit.string);
 						piece.matrixInd_(matrixMenu.value);
+						piece.filterInd_(filterMenu.value);
+						m_parent.filterManager.load(piece.filterInd);
 						this.updatePieces;
 						caller.value_(sel);
 						m_matricesListView.valueAction_(piece.matrixInd);
@@ -96,6 +103,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 					layout.add(nameLayout);
 					layout.add(matrixLayout);
+					layout.add(filterLayout);
 					layout.add(buttonLayout);
 
 					win.layout_(layout);
@@ -135,6 +143,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			if(lv.selection[0] != nil)
 			{
 				m_masterVolumeNumberBox.valueAction_(m_parent.pieces[lv.selection[0]].masterLevel);
+				m_parent.filterManager.load(m_parent.pieces[lv.selection[0]].filterInd);
 			};
 
 			m_sfView.setSelection(0, [0,0]);
@@ -422,10 +431,13 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		});
 		m_midiConfigButton = Button().states_([["Configure MIDI"]]).action_({m_parent.configureMIDI;});
 
+		m_filterConfigButton = Button().states_([["Configure Filters"]]).action_({m_parent.configureFilters;});
+
 		m_rightLayout.add(
 			HLayout(
 				m_controlsConfigButton,
 				m_midiConfigButton,
+				m_filterConfigButton,
 				m_saveButton,
 				Button().states_([["Lock Interface"],["Unlock Interface"]]).action_({ | caller | this.lockInterface(caller.value); })
 			).margins_([10,10,20,20])
