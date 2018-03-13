@@ -1,7 +1,7 @@
 title:: 04-Controls in SuperDiffuse
 summary:: Setting up Controls in SuperDiffuse
 categories:: Quarks>SuperDiffuse
-related:: Overviews/SuperDiffuseOverview, Tutorials/03-MatricesInSuperDiffuse, Tutorials/05-LoadingSavingConcerts
+related:: Overviews/SuperDiffuseOverview, Tutorials/03-MatricesInSuperDiffuse, Tutorials/05-FiltersInSuperDiffuse
 
 section::Overview
 SuperDiffuse uses hidden 'soft' master faders to control the volume of each output channel. These soft-faders subscribe to the value of a 'real' control fader. This allows a single control fader to affect multiple master faders, enabling the creation of grouping (useful for when there are more output channels than control faders).

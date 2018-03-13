@@ -1,7 +1,7 @@
-title:: 06-SummaryForConcerts
+title:: 07-SummaryForConcerts
 summary:: TL/DR for the concert
 categories:: Quarks>SuperDiffuse
-related:: Overviews/SuperDiffuseOverview, Tutorials/05-LoadingSavingConcerts
+related:: Overviews/SuperDiffuseOverview, Tutorials/06-LoadingSavingConcerts
 
 section::Overview
 What it's all about. Concerts. Below are the final pieces of information that might be useful (or links to previous stuff if you have skipped ahead)
@@ -27,4 +27,3 @@ It will remember when switching between pieces, but not reloading from a save fi
 
 section::Locking the interface
 To avoid accidentally changing critical settings during concerts, the "Lock Interface" button will disable any editing functionality of the GUI.
-

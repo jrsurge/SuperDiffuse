@@ -21,6 +21,7 @@ list::
 ## Associate pieces with matrices (i.e. each piece can be associated with its own routing matrix)
 ## Setup up your control faders (i.e. specify what each control fader actually controls)
 ## emphasis::Optional: if using MIDI, configure MIDI mappings::
+## emphasis::Optional: if required, configure input/output filters::
 ## Save your concert configuration to be loaded again later
 ::
 
@@ -31,6 +32,7 @@ list::
 ##link::Tutorials/02-PiecesInSuperDiffuse##Pieces in SuperDiffuse::
 ##link::Tutorials/03-MatricesInSuperDiffuse##Matrices in SuperDiffuse::
 ##link::Tutorials/04-ControlsInSuperDiffuse##Controls in SuperDiffuse::
-##link::Tutorials/05-LoadingSavingConcerts##Loading/Saving Concerts::
-##link::Tutorials/06-SummaryForConcerts##Index of information for Concerts::
+##link::Tutorials/05-FiltersInSuperDiffuse##Filters in SuperDiffuse::
+##link::Tutorials/06-LoadingSavingConcerts##Loading/Saving Concerts::
+##link::Tutorials/07-SummaryForConcerts##Index of information for Concerts::
 ::
