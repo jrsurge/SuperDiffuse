@@ -22,7 +22,7 @@ SuperDiffuse_FilterUnit
 
 	init {
 		m_synth = nil;
-		m_active = false;
+		m_active = 0;
 	}
 
 	active {
@@ -117,6 +117,10 @@ SuperDiffuse_FilterUnit
 		<< bpRq << ","
 		<< bpGain << ","
 		<< lpFreq << ")";
+	}
+
+	saveInfo {
+		^[m_active, hpOn, bpOn, lpOn, hpFreq, bpFreq, bpRq, bpGain, lpFreq];
 	}
 
 	load {

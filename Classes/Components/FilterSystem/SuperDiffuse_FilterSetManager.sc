@@ -12,18 +12,36 @@ SuperDiffuse_FilterSetManager
 {
 	var m_filterSets;
 	var m_currentSet;
+	var m_numIns, m_numOuts, m_inBus, m_outBus, m_inFxGroup, m_outFxGroup;
 
-	*new {
-		^super.new.init;
+	*new { | numIns, numOuts, inBus, outBus, inFxGroup, outFxGroup |
+		^super.new.init(numIns, numOuts, inBus, outBus, inFxGroup, outFxGroup);
 	}
 
-	init {
+	init { | numIns, numOuts, inBus, outBus, inFxGroup, outFxGroup |
 		m_filterSets = List();
 		m_currentSet = nil;
+
+		m_numIns = numIns;
+		m_numOuts = numOuts;
+		m_inBus = inBus;
+		m_outBus = outBus;
+		m_inFxGroup = inFxGroup;
+		m_outFxGroup = outFxGroup;
+	}
+
+	clear {
+		this.unload;
+
+		m_filterSets.clear;
 	}
 
 	addFilterSet { | filterSet |
 		m_filterSets.add(filterSet);
+	}
+
+	createFilterSet {
+		^SuperDiffuse_FilterSet(m_numIns, m_numOuts, m_inBus, m_outBus, m_inFxGroup, m_outFxGroup);
 	}
 
 	removeFilterSet { | ind |
@@ -41,6 +59,10 @@ SuperDiffuse_FilterSetManager
 
 	at { | ind |
 		^m_filterSets[ind];
+	}
+
+	filterSets {
+		^m_filterSets;
 	}
 
 	load { | ind |

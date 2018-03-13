@@ -20,7 +20,19 @@ SuperDiffuse {
 		concert = SuperDiffuse_Concert(dic[\setupInfo][0], dic[\setupInfo][1], dic[\setupInfo][2]);
 
 		dic[\pieces].do({|pieceInfo|
-			concert.addPiece(SuperDiffuse_Piece(pieceInfo[0]).name_(pieceInfo[1]).matrixInd_(pieceInfo[2]).masterLevel_(pieceInfo[3]));
+			var piece = SuperDiffuse_Piece(pieceInfo[0]);
+
+			piece.name_(pieceInfo[1]);
+			piece.matrixInd_(pieceInfo[2]);
+			piece.masterLevel_(pieceInfo[3]);
+
+			// older save files won't have filter indices
+			if(pieceInfo.size == 5)
+			{
+				piece.filterInd_(pieceInfo[4]);
+			};
+
+			concert.addPiece(piece);
 		});
 
 		// get rid of any existing matrices
@@ -30,6 +42,51 @@ SuperDiffuse {
 			concert.addMatrix(matrixInfo[0]);
 			concert.matrices.last.matrix = matrixInfo[1];
 		});
+
+		// old save files won't have filterSets
+		if(dic[\filterSets] != nil)
+		{
+			// get rid of any existing filterSets
+			concert.filterManager.clear; // doing this here ensures we have the Default filterSet even if it's an old save
+
+			dic[\filterSets].do({| filterSetInfo |
+				var fs = concert.filterManager.createFilterSet;
+
+				fs.name_(filterSetInfo[0]);
+
+				// inFilters
+				filterSetInfo[1].do({ | info, ind |
+					fs.inFilters[ind]
+					.active_(info[0])
+					.hpOn_(info[1])
+					.bpOn_(info[2])
+					.lpOn_(info[3])
+					.hpFreq_(info[4])
+					.bpFreq_(info[5])
+					.bpRq_(info[6])
+					.bpGain_(info[7])
+					.lpFreq_(info[8])
+					;
+				});
+
+				// outFilters
+				filterSetInfo[2].do({ | info, ind |
+					fs.outFilters[ind]
+					.active_(info[0])
+					.hpOn_(info[1])
+					.bpOn_(info[2])
+					.lpOn_(info[3])
+					.hpFreq_(info[4])
+					.bpFreq_(info[5])
+					.bpRq_(info[6])
+					.bpGain_(info[7])
+					.lpFreq_(info[8])
+					;
+				});
+
+				concert.filterManager.addFilterSet(fs);
+			})
+		};
 
 		dic[\controlsConfig].do({| controlAssignment, ind |
 			concert.assignControl(controlAssignment, ind);
@@ -155,8 +212,9 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	}
 
 	initFilters {
-		m_filterManager = SuperDiffuse_FilterSetManager();
-		m_filterManager.addFilterSet(SuperDiffuse_FilterSet(m_numIns, m_numOuts, m_inBus, m_outBus, m_inFxGroup, m_outFxGroup).name_("Default"));
+		m_filterManager = SuperDiffuse_FilterSetManager(m_numIns, m_numOuts, m_inBus, m_outBus, m_inFxGroup, m_outFxGroup);
+
+		m_filterManager.addFilterSet(m_filterManager.createFilterSet().name_("Default"));
 	}
 
 	addPiece { | piece |
@@ -425,8 +483,17 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		dic = Dictionary();
 
 		dic.add(\setupInfo -> [m_numIns, m_numOuts, m_numControls]);
-		dic.add(\pieces -> m_pieces.collect({|piece| [piece.path, piece.name, piece.matrixInd, piece.masterLevel] }));
+		dic.add(\pieces -> m_pieces.collect({|piece| [piece.path, piece.name, piece.matrixInd, piece.masterLevel, piece.filterInd] }));
 		dic.add(\matrices -> m_matrices.collect({|matrix| [matrix.name, matrix.matrix] }));
+
+		dic.add(
+			\filterSets ->
+			m_filterManager.filterSets.collect({| filterSet |
+				[filterSet.name, filterSet.inFilters.collect({|fu| fu.saveInfo; }), filterSet.outFilters.collect({|fu| fu.saveInfo; })];
+			})
+		);
+
+
 		dic.add(\controlsConfig -> m_outFaders.collect({|outFader| m_masterControl.indexOf(outFader.subject)}));
 		dic.add(\midiConfig -> m_masterControl.faders.collect({|fader| [fader.midiChan, fader.midiCC]}));
 

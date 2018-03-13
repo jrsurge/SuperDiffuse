@@ -34,6 +34,14 @@ SuperDiffuse_FilterSet
 		^m_outFilters[ind];
 	}
 
+	inFilters {
+		^m_inFilters;
+	}
+
+	outFilters {
+		^m_outFilters;
+	}
+
 	name {
 		^m_name;
 	}
