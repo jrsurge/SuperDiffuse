@@ -80,8 +80,8 @@ SuperDiffuse_FilterSet
 
 		layout = VLayout();
 
-		inFilterLayout = VLayout();
-		outFilterLayout = VLayout();
+		inFilterLayout = HLayout();
+		outFilterLayout = HLayout();
 
 		win = Window("SuperDiffuse | Edit Filter Set");
 
@@ -117,13 +117,13 @@ SuperDiffuse_FilterSet
 			}
 		});
 
-		inFilterLayout.add(StaticText().string_("Input Filters")).add(inFilterList).add(inFilterView);
-		outFilterLayout.add(StaticText().string_("Output Filters")).add(outFilterList).add(outFilterView);
+		inFilterLayout.add(VLayout(StaticText().string_("Input Filters"),inFilterList)).add(inFilterView);
+		outFilterLayout.add(VLayout(StaticText().string_("Output Filters"),outFilterList)).add(outFilterView);
 
 		inFilterList.valueAction_(0);
 		outFilterList.valueAction_(0);
 
-		layout.add(HLayout(inFilterLayout,outFilterLayout));
+		layout.add(inFilterLayout).add(outFilterLayout);
 
 		win.layout_(layout);
 		win.front;
