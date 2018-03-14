@@ -22,7 +22,7 @@ This will open the filter set edit dialog:
 
 image::filterset-edit-dialog.png::
 
-To configure a particular filter in this set, click its name in the corresponding list and edit its properties below. The left-side configures input filters, the right-side configures output filters.
+To configure a particular filter in this set, click its name in the corresponding list and edit its properties below. The top-half configures input filters, the bottom-half configures output filters.
 
 warning::Changes to filter states (turning on/off) will occur when closing the edit dialog::
-warning:::Changes to filter parameters are 'live' - if this filter set is the one currently being used, changes will be audible::
+warning::Changes to filter parameters are 'live' - if this filter set is the one currently being used, changes will be occur immediately::
