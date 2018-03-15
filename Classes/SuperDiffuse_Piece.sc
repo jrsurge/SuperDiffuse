@@ -1,5 +1,8 @@
+
+
 SuperDiffuse_Piece {
 	var m_name, m_path, m_soundFile, m_matrixInd, m_masterLevel;
+	var m_filterInd;
 	var m_playbackEv;
 
 	*new { | path |
@@ -10,6 +13,7 @@ SuperDiffuse_Piece {
 		m_name = path;
 		m_path = path;
 		m_matrixInd = 0;
+		m_filterInd = 0;
 		m_masterLevel = 0.5;
 		m_soundFile = SoundFile(path);
 		m_soundFile.openRead();
@@ -78,6 +82,17 @@ SuperDiffuse_Piece {
 		if(m_matrixInd != ind)
 		{
 			m_matrixInd = ind;
+		}
+	}
+
+	filterInd {
+		^m_filterInd;
+	}
+
+	filterInd_ { | ind |
+		if(m_filterInd != ind)
+		{
+			m_filterInd = ind;
 		}
 	}
 

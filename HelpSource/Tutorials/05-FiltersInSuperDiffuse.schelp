@@ -1,0 +1,53 @@
+title:: 05-Filters in SuperDiffuse
+summary:: Setting up filters in SuperDiffuse
+categories:: Quarks>SuperDiffuse
+related:: Overviews/SuperDiffuseOverview, Tutorials/04-ControlsInSuperDiffuse, Tutorials/06-LoadingSavingConcerts
+
+section::Overview
+Since version 1.3.0, SuperDiffuse has editable filters that can be applied to input channels (pre-routing matrix) and output channels (post-routing matrix).
+
+The filter system in SuperDiffuse allows Pieces to be associated with a set of filters (input and output), much like the Matrices. As with Matrices, to associate a Piece with a filter set, edit the piece information.
+
+note::Unless you specifically configure filters, no filtering will occur. By default, a blank filter set is created.::
+
+section::Configuring Filter Sets
+Pressing the "Configure Filters" button will open the configuration window:
+
+image::filtersets-config-dialog.png::
+
+Pressing the "+" button will add a new filter set.
+
+subsection:: Editing Filter Sets
+
+note::Changes to filter parameters are 'live' - if this filter set is the one currently being used, changes will be occur immediately::
+
+To edit a filter set, click its name in the list, and press strong::Ctrl + e::.
+This will open the filter set edit dialog:
+
+image::filterset-edit-dialog.png::
+
+note:: Modifying the name of the filter set will only apply after pressing enter ::
+
+To configure a particular filter in this set, click its name in the corresponding list and edit its corresponding properties. The top-half configures input filters, the bottom-half configures output filters.
+
+subsection:: Filter parameters
+
+The filters in SuperDiffuse are 3 filters in series: HPF -> BPF -> LPF.
+
+This chain of filters can be turned on/off completely using the Filter State button, and the individual filters in the chain itself can be turned on/off independently.
+
+list::
+## Filter State will turn on/off the filter.
+## The HPF is a strong::-12dB/octave:: rolloff below the given frequency (2nd order Butterworth)
+## The BPF is a parametric filter, allowing a peak/notch
+list::
+## Freq is the centre frequency
+## 1/Q is the reciprocal of Q (bandwidth / freq). Smaller numbers result in a smaller bandwidth
+## Gain is a mapping parameter, taking values between -1 and +1 (applying -24dB, and +24dB respectively)
+::
+
+warning:: Using the BPF to boost frequencies may cause distortion ::
+
+## The LPF is a strong::-12dB/octave:: rolloff above the given frequency (2nd order Butterworth)
+
+::

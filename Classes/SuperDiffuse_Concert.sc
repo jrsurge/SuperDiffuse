@@ -20,7 +20,19 @@ SuperDiffuse {
 		concert = SuperDiffuse_Concert(dic[\setupInfo][0], dic[\setupInfo][1], dic[\setupInfo][2]);
 
 		dic[\pieces].do({|pieceInfo|
-			concert.addPiece(SuperDiffuse_Piece(pieceInfo[0]).name_(pieceInfo[1]).matrixInd_(pieceInfo[2]).masterLevel_(pieceInfo[3]));
+			var piece = SuperDiffuse_Piece(pieceInfo[0]);
+
+			piece.name_(pieceInfo[1]);
+			piece.matrixInd_(pieceInfo[2]);
+			piece.masterLevel_(pieceInfo[3]);
+
+			// older save files won't have filter indices
+			if(pieceInfo.size == 5)
+			{
+				piece.filterInd_(pieceInfo[4]);
+			};
+
+			concert.addPiece(piece);
 		});
 
 		// get rid of any existing matrices
@@ -30,6 +42,51 @@ SuperDiffuse {
 			concert.addMatrix(matrixInfo[0]);
 			concert.matrices.last.matrix = matrixInfo[1];
 		});
+
+		// old save files won't have filterSets
+		if(dic[\filterSets] != nil)
+		{
+			// get rid of any existing filterSets
+			concert.filterManager.clear; // doing this here ensures we have the Default filterSet even if it's an old save
+
+			dic[\filterSets].do({| filterSetInfo |
+				var fs = concert.filterManager.createFilterSet;
+
+				fs.name_(filterSetInfo[0]);
+
+				// inFilters
+				filterSetInfo[1].do({ | info, ind |
+					fs.inFilters[ind]
+					.active_(info[0])
+					.hpOn_(info[1])
+					.bpOn_(info[2])
+					.lpOn_(info[3])
+					.hpFreq_(info[4])
+					.bpFreq_(info[5])
+					.bpRq_(info[6])
+					.bpGain_(info[7])
+					.lpFreq_(info[8])
+					;
+				});
+
+				// outFilters
+				filterSetInfo[2].do({ | info, ind |
+					fs.outFilters[ind]
+					.active_(info[0])
+					.hpOn_(info[1])
+					.bpOn_(info[2])
+					.lpOn_(info[3])
+					.hpFreq_(info[4])
+					.bpFreq_(info[5])
+					.bpRq_(info[6])
+					.bpGain_(info[7])
+					.lpFreq_(info[8])
+					;
+				});
+
+				concert.filterManager.addFilterSet(fs);
+			})
+		};
 
 		dic[\controlsConfig].do({| controlAssignment, ind |
 			concert.assignControl(controlAssignment, ind);
@@ -45,13 +102,26 @@ SuperDiffuse {
 	}
 }
 
+/*
+
+inGroup -> inFxGroup -> patcherGroup -> outFxGroup -> outGroup
+
+- inGroup has playbackSynth with nChannels, writes to inBus[numIns] : nChannels <= numIns;
+- inFxGroup has filterSynths for each input channel, overwrites inBus
+- patcherGroup has patcherSynths for each routing, routes inBus[n] to outBus[n]
+- outFxGroup has filterSynth for each output channel, overwrites outBus
+- outGroup has outputSynth, multiplies outBus by controlBus, sends to DAC
+
+*/
+
 SuperDiffuse_Concert : SuperDiffuse_Subject {
 	var m_pieces, m_matrixMaster, m_matrices, m_numIns, m_numOuts, m_numControls;
 	var m_masterControl, m_outFaders;
 	var m_inBus, m_outBus, m_controlBus;
 	var m_patchers;
-	var m_inGroup, m_patcherGroup, m_outGroup;
+	var m_inGroup, m_inFxGroup, m_patcherGroup, m_outFxGroup, m_outGroup;
 	var m_concertGUI;
+	var m_filterManager;
 
 	var m_playingPiece;
 
@@ -78,6 +148,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		this.initBuses(numIns, numOuts);
 		this.initGroups;
 		this.initMatrix(numIns, numOuts);
+		this.initFilters;
 
 		m_masterControl = SuperDiffuse_MasterControl(numControls);
 		m_numOuts.do({ | i |
@@ -93,11 +164,13 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	}
 
 	registerSynthDefs {
+		"Adding sd_patcher".inform;
 		SynthDef(\sd_patcher,{| in=0, out=0, gain=1 |
 			var sig = In.ar(in);
 			Out.ar(out,sig * gain);
 		}).add;
 
+		"Adding sd_outsynth".inform;
 		SynthDef(\sd_outsynth,{ | in=0, control=0, masterLevel=0 |
 			var sig, amps;
 
@@ -105,6 +178,18 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 			amps = In.kr(control, m_numOuts);
 
 			Out.ar(0, sig * Lag.kr(amps) * masterLevel);
+		}).add;
+
+		"Adding sd_filterSynth".inform;
+		SynthDef(\sd_filterSynth, { | in = 0, hpOn = 0, bpOn = 0, lpOn = 0, hpFreq = 5, bpFreq = 1000, bpRq = 1, bpGain = 0, lpFreq = 15000 |
+			var sig = In.ar(in);
+
+			sig = Select.ar(hpOn, [ sig, HPF.ar(sig, hpFreq) ]);
+			sig = Select.ar(bpOn, [ sig, MidEQ.ar(sig, bpFreq, bpRq, bpGain * 24) ]);
+
+			sig = Select.ar(lpOn, [ sig, LPF.ar(sig, lpFreq) ]);
+
+			ReplaceOut.ar(in, sig);
 		}).add;
 	}
 
@@ -116,13 +201,21 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 	initGroups {
 		m_inGroup = Group();
-		m_patcherGroup = Group.after(m_inGroup);
-		m_outGroup = Group.after(m_patcherGroup);
+		m_inFxGroup = Group.after(m_inGroup);
+		m_patcherGroup = Group.after(m_inFxGroup);
+		m_outFxGroup = Group.after(m_patcherGroup);
+		m_outGroup = Group.after(m_outFxGroup);
 	}
 
 	initMatrix { | numIns, numOuts |
 		m_matrixMaster = SuperDiffuse_Matrix(numIns, numOuts, "master");
 		m_matrices.add(SuperDiffuse_Matrix.newFrom(m_matrixMaster, "Default"));
+	}
+
+	initFilters {
+		m_filterManager = SuperDiffuse_FilterSetManager(m_numIns, m_numOuts, m_inBus, m_outBus, m_inFxGroup, m_outFxGroup);
+
+		m_filterManager.addFilterSet(m_filterManager.createFilterSet().name_("Default"));
 	}
 
 	addPiece { | piece |
@@ -176,6 +269,10 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 	matrices {
 		^m_matrices;
+	}
+
+	filterManager {
+		^m_filterManager;
 	}
 
 	controls {
@@ -302,6 +399,37 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		win.front;
 	}
 
+	configureFilters {
+		var win, layout;
+		var filterList;
+		var filterAddButton, filterRemoveButton;
+
+		win = Window("SuperDiffuse | Configure Filters");
+		layout = VLayout();
+
+		layout.add(StaticText().string_("Filter Sets"));
+
+		filterList = ListView().items_(m_filterManager.names).keyDownAction_({ | caller, char, modifiers, unicode, keycode, key |
+			if(caller.hasFocus)
+			{
+				if( (caller.selection[0] != nil) && (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd))
+				{
+					m_filterManager[caller.selection[0]].gui({caller.items_(m_filterManager.names); m_filterManager.reload; });
+				}
+			}
+		});
+
+		filterAddButton = Button().states_([["+"]]).action_({
+			m_filterManager.addFilterSet(SuperDiffuse_FilterSet(m_numIns, m_numOuts, m_inBus, m_outBus, m_inFxGroup, m_outFxGroup));
+			filterList.items_(m_filterManager.names);
+		});
+
+		layout.add(VLayout(filterList, HLayout(filterAddButton)));
+
+		win.layout_(layout);
+		win.front;
+	}
+
 	assignControl { | controlInd, faderInd |
 		if(controlInd != nil)
 		{
@@ -323,9 +451,14 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		m_masterControl.clear;
 		m_inGroup.free;
 		m_outGroup.free;
+
 		m_patcherGroup.free;
 		m_patcherGroup = nil;
 		this.clearPatchers;
+
+		m_filterManager.unload;
+		m_inFxGroup.free;
+		m_outFxGroup.free;
 	}
 
 	clearPatchers
@@ -351,8 +484,17 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		dic = Dictionary();
 
 		dic.add(\setupInfo -> [m_numIns, m_numOuts, m_numControls]);
-		dic.add(\pieces -> m_pieces.collect({|piece| [piece.path, piece.name, piece.matrixInd, piece.masterLevel] }));
+		dic.add(\pieces -> m_pieces.collect({|piece| [piece.path, piece.name, piece.matrixInd, piece.masterLevel, piece.filterInd] }));
 		dic.add(\matrices -> m_matrices.collect({|matrix| [matrix.name, matrix.matrix] }));
+
+		dic.add(
+			\filterSets ->
+			m_filterManager.filterSets.collect({| filterSet |
+				[filterSet.name, filterSet.inFilters.collect({|fu| fu.saveInfo; }), filterSet.outFilters.collect({|fu| fu.saveInfo; })];
+			})
+		);
+
+
 		dic.add(\controlsConfig -> m_outFaders.collect({|outFader| m_masterControl.indexOf(outFader.subject)}));
 		dic.add(\midiConfig -> m_masterControl.faders.collect({|fader| [fader.midiChan, fader.midiCC]}));
 
