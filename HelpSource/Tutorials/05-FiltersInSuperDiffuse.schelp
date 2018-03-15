@@ -19,6 +19,8 @@ Pressing the "+" button will add a new filter set.
 
 subsection:: Editing Filter Sets
 
+note::Changes to filter parameters are 'live' - if this filter set is the one currently being used, changes will be occur immediately::
+
 To edit a filter set, click its name in the list, and press strong::Ctrl + e::.
 This will open the filter set edit dialog:
 
@@ -30,13 +32,18 @@ To configure a particular filter in this set, click its name in the correspondin
 
 subsection:: Filter parameters
 
+The filters in SuperDiffuse are 3 filters in series: HPF -> BPF -> LPF.
+
+This chain of filters can be turned on/off completely using the Filter State button, and the individual filters in the chain itself can be turned on/off independently.
+
 list::
+## Filter State will turn on/off the filter.
 ## The HPF is a strong::-12dB/octave:: rolloff below the given frequency (2nd order Butterworth)
 ## The BPF is a parametric filter, allowing a peak/notch
 list::
 ## Freq is the centre frequency
 ## 1/Q is the reciprocal of Q (bandwidth / freq). Smaller numbers result in a smaller bandwidth
-## Gain is a mapping parameter: -1 applies -24dB, 1 applies +24dB
+## Gain is a mapping parameter, taking values between -1 and +1 (applying -24dB, and +24dB respectively)
 ::
 
 warning:: Using the BPF to boost frequencies may cause distortion ::
@@ -44,5 +51,3 @@ warning:: Using the BPF to boost frequencies may cause distortion ::
 ## The LPF is a strong::-12dB/octave:: rolloff above the given frequency (2nd order Butterworth)
 
 ::
-
-note::Changes to filter parameters are 'live' - if this filter set is the one currently being used, changes will be occur immediately::
