@@ -157,7 +157,7 @@ SuperDiffuse_FilterUnit
 		this.load;
 	}
 
-	getView {
+	getView { | onActivate |
 		var view, layout;
 		var bActive;
 		var bHpOn, bBpOn, bLpOn;
@@ -165,7 +165,7 @@ SuperDiffuse_FilterUnit
 
 		view = View();
 
-		bActive = Button().states_([["OFF"], ["ON"]]).action_({|caller| this.active_(caller.value); }).value_(m_active);
+		bActive = Button().states_([["OFF"], ["ON"]]).action_({|caller| this.active_(caller.value); onActivate.value; }).value_(m_active);
 
 		bHpOn = Button().states_([["OFF"], ["ON"]]).action_({|caller| this.hpOn_(caller.value); }).value_(hpOn);
 		bBpOn = Button().states_([["OFF"], ["ON"]]).action_({|caller| this.bpOn_(caller.value); }).value_(bpOn);

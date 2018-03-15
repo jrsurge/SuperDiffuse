@@ -67,7 +67,13 @@ SuperDiffuse_FilterSet
 		this.load;
 	}
 
-	gui { | onClose |
+	// NOTE:
+	// onUpdate is used to reload the active filter set.
+	// It's required in case we're editing a filter set that isn't the currently active filter set
+	// It's not great, but the filter units don't know what set they're attached to, and the filter sets
+	// don't know whether they're currently the active one, so this essentially passes through the filter
+	// manager reload to retain the filter manager's omniscience
+	gui { | onUpdate |
 		var win;
 		var layout;
 		var name;
@@ -85,7 +91,7 @@ SuperDiffuse_FilterSet
 
 		win = Window("SuperDiffuse | Edit Filter Set");
 
-		name = TextField().string_(m_name).action_({| caller | m_name = caller.value;});
+		name = TextField().string_(m_name).action_({| caller | m_name = caller.value; onUpdate.value; });
 
 		layout.add(HLayout(StaticText().string_("Name: "), name));
 
@@ -99,7 +105,7 @@ SuperDiffuse_FilterSet
 					inFilterView.remove;
 				};
 
-				inFilterLayout.add(inFilterView = m_inFilters[sel].getView);
+				inFilterLayout.add(inFilterView = m_inFilters[sel].getView(onUpdate));
 			}
 		});
 
@@ -113,7 +119,7 @@ SuperDiffuse_FilterSet
 					outFilterView.remove;
 				};
 
-				outFilterLayout.add(outFilterView = m_outFilters[sel].getView);
+				outFilterLayout.add(outFilterView = m_outFilters[sel].getView(onUpdate));
 			}
 		});
 
@@ -127,6 +133,5 @@ SuperDiffuse_FilterSet
 
 		win.layout_(layout);
 		win.front;
-		win.onClose_(onClose);
 	}
 }
