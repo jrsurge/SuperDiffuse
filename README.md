@@ -21,7 +21,7 @@ https://supercollider.github.io
 SuperDiffuse is written as a Quark, so __if you have Git installed__ (Windows users will need to manually install Git), run the following in SuperCollider:
 
 ```supercollider
-Quarks.install("https:/github.com/jrsurge/SuperDiffuse")
+Quarks.install("https://github.com/jrsurge/SuperDiffuse")
 ```
 
 Then restart SuperCollider (or just recompile the class library with `Ctrl/Cmd + Shift + L`).
@@ -48,7 +48,7 @@ Make sure your SuperCollider is setup to use the number of output channels you n
 // connect to your soundcard
 //  all connected devices are listed on booting
 //  the server if you need to know what goes here
-s.options.device_("ASIO : ASIO Babyface");
+s.options.device_("ASIO : ASIO Fireface");
 
 // set the number of output channels on the card:
 s.options.numOutputBusChannels_(8);
