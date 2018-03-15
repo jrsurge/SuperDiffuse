@@ -15,14 +15,34 @@ Pressing the "Configure Filters" button will open the configuration window:
 
 image::filtersets-config-dialog.png::
 
-Here, pressing the "+" button will add a new filter set.
+Pressing the "+" button will add a new filter set.
+
+subsection:: Editing Filter Sets
 
 To edit a filter set, click its name in the list, and press strong::Ctrl + e::.
 This will open the filter set edit dialog:
 
 image::filterset-edit-dialog.png::
 
-To configure a particular filter in this set, click its name in the corresponding list and edit its properties below. The top-half configures input filters, the bottom-half configures output filters.
+note:: Modifying the name of the filter set will only apply after pressing enter ::
 
-warning::Changes to filter states (turning on/off) will occur when closing the edit dialog::
-warning::Changes to filter parameters are 'live' - if this filter set is the one currently being used, changes will be occur immediately::
+To configure a particular filter in this set, click its name in the corresponding list and edit its corresponding properties. The top-half configures input filters, the bottom-half configures output filters.
+
+subsection:: Filter parameters
+
+list::
+## The HPF is a strong::-12dB/octave:: rolloff below the given frequency (2nd order Butterworth)
+## The BPF is a parametric filter, allowing a peak/notch
+list::
+## Freq is the centre frequency
+## 1/Q is the reciprocal of Q (bandwidth / freq). Smaller numbers result in a smaller bandwidth
+## Gain is a mapping parameter: -1 applies -24dB, 1 applies to +24dB
+::
+
+warning:: Using the BPF to boost frequencies may cause distortion ::
+
+## The LPF is a strong::-12dB/octave:: rolloff above the given frequency (2nd order Butterworth)
+
+::
+
+note::Changes to filter parameters are 'live' - if this filter set is the one currently being used, changes will be occur immediately::
