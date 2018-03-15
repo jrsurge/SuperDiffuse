@@ -475,6 +475,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_piecesAddButton.enabled_(invState);
 		m_piecesRemoveButton.enabled_(invState);
 		m_controlsConfigButton.enabled_(invState);
+		m_filterConfigButton.enabled_(invState);
 		m_midiConfigButton.enabled_(invState);
 		m_saveButton.enabled_(invState);
 
