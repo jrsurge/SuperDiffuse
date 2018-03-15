@@ -185,7 +185,8 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 			var sig = In.ar(in);
 
 			sig = Select.ar(hpOn, [ sig, HPF.ar(sig, hpFreq) ]);
-			sig = Select.ar(bpOn, [ sig, MidEQ.ar(sig, bpFreq, bpRq, pow(bpGain, 4) * 24) ]);
+			sig = Select.ar(bpOn, [ sig, MidEQ.ar(sig, bpFreq, bpRq, bpGain * 24) ]);
+
 			sig = Select.ar(lpOn, [ sig, LPF.ar(sig, lpFreq) ]);
 
 			ReplaceOut.ar(in, sig);
