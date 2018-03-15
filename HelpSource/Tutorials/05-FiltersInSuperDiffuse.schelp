@@ -36,7 +36,7 @@ list::
 list::
 ## Freq is the centre frequency
 ## 1/Q is the reciprocal of Q (bandwidth / freq). Smaller numbers result in a smaller bandwidth
-## Gain is a mapping parameter: -1 applies -24dB, 1 applies to +24dB
+## Gain is a mapping parameter: -1 applies -24dB, 1 applies +24dB
 ::
 
 warning:: Using the BPF to boost frequencies may cause distortion ::
