@@ -1,5 +1,7 @@
 /* Convenience wrapper */
 SuperDiffuse {
+	classvar <version = "1.4.0";
+
 	*new { | numIns, numOuts, numControls |
 		if(numOuts > Server.default.options.numOutputBusChannels)
 		{
@@ -156,7 +158,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		});
 		m_concertGUI = SuperDiffuse_ConcertGUI(this);
 
-		("\n\n*** Welcome to SuperDiffuse ***\nCopyright(c) James Surgenor, 2016\nDeveloped at the University of Sheffield Sound Studios\n\n").postln;
+		Post << "*** Welcome to SuperDiffuse ***" "\nVersion " << SuperDiffuse.version << "\nCopyright(c) James Surgenor, 2016-2019\nDeveloped at the University of Sheffield Sound Studios\n\n";
 
 		Synth(\sd_outsynth,[\in, m_outBus, \control, m_controlBus], m_outGroup);
 
