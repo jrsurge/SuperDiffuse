@@ -228,8 +228,17 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		}
 	}
 
-	addMatrix { | name |
-		m_matrices.add(SuperDiffuse_Matrix.newFrom(m_matrixMaster, name));
+	addMatrix { | name, refIndex=nil |
+		var refMatrix = m_matrixMaster;
+
+		if(refIndex != nil)
+		{
+			refMatrix = m_matrices[refIndex];
+			name = refMatrix.name + "Copy";
+		};
+
+		m_matrices.add(SuperDiffuse_Matrix.newFrom(refMatrix, name));
+
 		m_observers.do(_.updateMatrices);
 	}
 

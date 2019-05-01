@@ -222,125 +222,133 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_matrixEditFunc = { | caller, char, modifiers, unicode, keycode, key |
 			if(caller.hasFocus)
 			{
-				if( (caller.selection[0] != nil) && (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd))
+				var selectedMatrix = caller.selection[0];
+
+				if(selectedMatrix != nil)
 				{
-					var win, layout, fieldLayout, textEdit, buttonLayout, matrixLayout, okButton, cancelButton, matrixScrollView, matrixScrollCanvas;
-					var sel, matrix;
-					var tmpMatrix;
-
-					sel = caller.selection[0];
-					matrix = m_parent.matrix(sel);
-					tmpMatrix = SuperDiffuse_Matrix.newFrom(matrix,"tmp");
-
-					win = Window("SuperDiffuse | Edit Matrix");
-					layout = VLayout();
-					fieldLayout = HLayout();
-					buttonLayout = HLayout();
-
-
-					fieldLayout.add(StaticText().string_("Name: "));
-					textEdit = TextField().string_(matrix.name);
-					fieldLayout.add(textEdit);
-
-					cancelButton = Button().states_([["Cancel"]]).action_({
-						win.close;
-					});
-					okButton = Button().states_([["OK"]]).action_({
-						if(textEdit.string != matrix.name)
-						{
-							matrix.name = textEdit.string;
-
-							caller.value_(sel);
-
-						};
-						matrix.matrix = tmpMatrix.matrix;
-						m_parent.loadMatrix(matrix);
-
-						this.updateMatrices;
-
-						win.close;
-					});
-
-					buttonLayout.add(cancelButton);
-					buttonLayout.add(okButton);
-
-					layout.add(fieldLayout);
-
-
-					matrixScrollView = ScrollView();
-					matrixScrollCanvas = View();
-					matrixScrollView.canvas_(matrixScrollCanvas);
-
-					matrixLayout = GridLayout();
-					matrixScrollCanvas.layout_(matrixLayout);
-
-					matrix.matrix.size.do({ | in |
-						matrix.matrix[0].size.do({ | out |
-							var numBox;
-
-							numBox = NumberBox()
-							.align_(\center)
-							.clipLo_(0)
-							.value_(tmpMatrix.matrix[in][out])
-							.action_({|caller|
-								tmpMatrix.matrix[in][out] = caller.value;
-
-								if(caller.value > 1)
-								{
-									caller.background_(Color.red);
-								}
-								{
-									if(caller.value > 0)
-									{
-										caller.background_(Color.green(1, caller.value));
-									}
-									{
-										caller.background_(Color.white);
-									};
-								};
-							})
-							.toolTip_("%:%".format(in+1, out+1));
-
-							if(tmpMatrix.matrix[in][out] > 1)
-							{
-								numBox.background_(Color.red);
-							}
-							{
-								if(tmpMatrix.matrix[in][out] > 0)
-								{
-									numBox.background_(Color.green(1,tmpMatrix.matrix[in][out]));
-								}
-								{
-									numBox.background_(Color.white);
-								};
-							};
-
-
-							matrixLayout.add(StaticText().string_("In%".format(in+1)).align_(\center), in+1, 0);
-							matrixLayout.add(StaticText().string_("Out%".format(out+1)).align_(\center), 0, out+1);
-							matrixLayout.add(numBox,in+1,out+1);
-						});
-					});
-
-					layout.add(matrixScrollView);
-
-					layout.add(buttonLayout);
-
-					win.layout_(layout);
-					win.front;
-				};
-				{
-					if( (caller.selection[0] != nil) && (key == 0x20))
-					{
+					case
+					{ key == 0x20 } {
 						if(m_parent.isPlaying)
 						{
 							this.stop;
 						}
 						{
-							this.play(caller.selection[0]);
+							if(m_piecesListView.selection[0] != nil)
+							{
+								this.play(m_piecesListView.selection[0]);
+							}
 						};
 					}
-				}
+					{ (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd) } {
+						var win, layout, fieldLayout, textEdit, buttonLayout, matrixLayout, okButton, cancelButton, matrixScrollView, matrixScrollCanvas;
+						var sel, matrix;
+						var tmpMatrix;
+
+						sel = caller.selection[0];
+						matrix = m_parent.matrix(sel);
+						tmpMatrix = SuperDiffuse_Matrix.newFrom(matrix,"tmp");
+
+						win = Window("SuperDiffuse | Edit Matrix");
+						layout = VLayout();
+						fieldLayout = HLayout();
+						buttonLayout = HLayout();
+
+
+						fieldLayout.add(StaticText().string_("Name: "));
+						textEdit = TextField().string_(matrix.name);
+						fieldLayout.add(textEdit);
+
+						cancelButton = Button().states_([["Cancel"]]).action_({
+							win.close;
+						});
+						okButton = Button().states_([["OK"]]).action_({
+							if(textEdit.string != matrix.name)
+							{
+								matrix.name = textEdit.string;
+
+								caller.value_(sel);
+
+							};
+							matrix.matrix = tmpMatrix.matrix;
+							m_parent.loadMatrix(matrix);
+
+							this.updateMatrices;
+
+							win.close;
+						});
+
+						buttonLayout.add(cancelButton);
+						buttonLayout.add(okButton);
+
+						layout.add(fieldLayout);
+
+
+						matrixScrollView = ScrollView();
+						matrixScrollCanvas = View();
+						matrixScrollView.canvas_(matrixScrollCanvas);
+
+						matrixLayout = GridLayout();
+						matrixScrollCanvas.layout_(matrixLayout);
+
+						matrix.matrix.size.do({ | in |
+							matrix.matrix[0].size.do({ | out |
+								var numBox;
+
+								numBox = NumberBox()
+								.align_(\center)
+								.clipLo_(0)
+								.value_(tmpMatrix.matrix[in][out])
+								.action_({|caller|
+									tmpMatrix.matrix[in][out] = caller.value;
+
+									if(caller.value > 1)
+									{
+										caller.background_(Color.red);
+									}
+									{
+										if(caller.value > 0)
+										{
+											caller.background_(Color.green(1, caller.value));
+										}
+										{
+											caller.background_(Color.white);
+										};
+									};
+								})
+								.toolTip_("%:%".format(in+1, out+1));
+
+								if(tmpMatrix.matrix[in][out] > 1)
+								{
+									numBox.background_(Color.red);
+								}
+								{
+									if(tmpMatrix.matrix[in][out] > 0)
+									{
+										numBox.background_(Color.green(1,tmpMatrix.matrix[in][out]));
+									}
+									{
+										numBox.background_(Color.white);
+									};
+								};
+
+
+								matrixLayout.add(StaticText().string_("In%".format(in+1)).align_(\center), in+1, 0);
+								matrixLayout.add(StaticText().string_("Out%".format(out+1)).align_(\center), 0, out+1);
+								matrixLayout.add(numBox,in+1,out+1);
+							});
+						});
+
+						layout.add(matrixScrollView);
+
+						layout.add(buttonLayout);
+
+						win.layout_(layout);
+						win.front;
+					}
+					{ (key == 0x44) && (modifiers.isCtrl || modifiers.isCmd) } {
+						m_parent.addMatrix("copy", selectedMatrix);
+					};
+				};
 			};
 		};
 
