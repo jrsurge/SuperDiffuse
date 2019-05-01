@@ -38,3 +38,5 @@ note::
 You cannot remove the default matrix
 ::
 
+section::Duplicating matrices
+To create a copy of a matrix, select it in the list and press strong::Ctrl + d::.

@@ -15,7 +15,13 @@ Pressing the "Configure Filters" button will open the configuration window:
 
 image::filtersets-config-dialog.png::
 
-Pressing the "+" button will add a new filter set.
+Pressing the strong::[+]:: button will add a new filter set.
+
+Pressing the strong::[-]:: button will remove the selected filter set
+note::You cannot remove the Default matrix::
+
+section::Duplicating Filter Sets
+To duplicate a filter set, select it in the list and press strong::Ctrl + d::.
 
 subsection:: Editing Filter Sets
 
