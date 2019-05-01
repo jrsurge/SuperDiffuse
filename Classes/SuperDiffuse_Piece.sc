@@ -65,13 +65,11 @@ SuperDiffuse_Piece {
 	}
 
 	== { | b |
-		if(b.isKindOf(SuperDiffuse_Piece))
-		{
-			^(m_path == b.path);
-		}
-		{
-			^false;
-		};
+		^this.compareObject(b, #[\m_path]);
+	}
+
+	hash {
+		^this.instVarHash(#[\m_path]);
 	}
 
 	matrixInd {
