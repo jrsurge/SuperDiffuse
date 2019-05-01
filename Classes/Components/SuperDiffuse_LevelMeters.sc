@@ -50,9 +50,13 @@ SuperDiffuse_LevelMeters
 			m_levelMeters.do(_.numSteps_(32));
 		});
 
+		layout.add();
+
 		m_levelMeters.do({ | meter |
 			layout.add(meter);
+			layout.add();
 		});
+
 
 		view.layout_(layout);
 		^view;
