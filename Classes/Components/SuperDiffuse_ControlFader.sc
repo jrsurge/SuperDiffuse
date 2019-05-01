@@ -43,7 +43,7 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 	// Values should be between 0-1
 	// They are scaled here to have an exponential response
 	value_ { | v |
-		m_value = v.pow(2);
+		m_value = v ** 2;
 		AppClock.sched(0,{m_slider.value_(v)});
 	}
 
