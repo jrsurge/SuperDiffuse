@@ -423,9 +423,21 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		filterList = ListView().items_(m_filterManager.names).keyDownAction_({ | caller, char, modifiers, unicode, keycode, key |
 			if(caller.hasFocus)
 			{
-				if( (caller.selection[0] != nil) && (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd))
+				var selectedFilterSet = caller.selection[0];
+
+				if(selectedFilterSet != nil)
 				{
-					m_filterManager[caller.selection[0]].gui({caller.items_(m_filterManager.names); m_filterManager.reload; });
+					case
+					{ (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd) } {
+						m_filterManager[caller.selection[0]].gui({caller.items_(m_filterManager.names); m_filterManager.reload; });
+					}
+					{ (key == 0x44) && (modifiers.isCtrl || modifiers.isCmd ) }
+					{
+						var filterSet = m_filterManager[selectedFilterSet];
+
+						m_filterManager.addFilterSet(SuperDiffuse_FilterSet.newFrom(filterSet, filterSet.name + "Copy"));
+						filterList.items_(m_filterManager.names);
+					};
 				}
 			}
 		});
@@ -435,7 +447,12 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 			filterList.items_(m_filterManager.names);
 		});
 
-		layout.add(VLayout(filterList, HLayout(filterAddButton)));
+		filterRemoveButton = Button().states_([["-"]]).action_({
+			m_filterManager.removeFilterSet(filterList.selection[0]);
+			filterList.items_(m_filterManager.names);
+		});
+
+		layout.add(VLayout(filterList, HLayout(filterAddButton, filterRemoveButton)));
 
 		win.layout_(layout);
 		win.front;

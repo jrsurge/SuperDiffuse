@@ -45,16 +45,19 @@ SuperDiffuse_FilterSetManager
 	}
 
 	removeFilterSet { | ind |
-		// if we're removing the current set, unload it first
-		if(m_currentSet != nil)
+		if(ind > 0) // don't remove the default filterset
 		{
-			if(m_filterSets[ind] === m_currentSet)
+			// if we're removing the current set, unload it first
+			if(m_currentSet != nil)
 			{
-				this.unload;
+				if(m_filterSets[ind] === m_currentSet)
+				{
+					this.unload;
+				};
 			};
-		};
 
-		m_filterSets.removeAt(ind);
+			m_filterSets.removeAt(ind);
+		}
 	}
 
 	at { | ind |
