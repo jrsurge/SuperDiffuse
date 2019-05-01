@@ -44,12 +44,12 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 	// They are scaled here to have an exponential response
 	value_ { | v |
 		m_value = v ** 2;
-		AppClock.sched(0,{m_slider.value_(v)});
+		this.action;
 	}
 
 	valueAction_ { | v |
 		this.value_(v);
-		this.action;
+		AppClock.sched(0,{m_slider.value_(v)});
 	}
 
 	assignMIDI { | midiChan, midiCC |
@@ -92,7 +92,9 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 
 		m_layout = VLayout();
 		// Slider displays linearly, but values are actually exponential - this stops graphical 'slipping' when moving manually
-		m_slider = Slider().maxWidth_(50).maxHeight_(100).action_({|v| this.valueAction_(v.value)}).value_(this.value);
+		m_slider = Slider().maxWidth_(50).maxHeight_(100).action_({|v|
+			this.value_(v.value);
+		}).value_(this.value);
 		//m_midiLearnButton = Button().maxWidth_(50).states_([["L"]]).action_({ this.learn; });
 		m_layout.add(m_slider,align:\center);
 		//m_layout.add(m_midiLearnButton);
