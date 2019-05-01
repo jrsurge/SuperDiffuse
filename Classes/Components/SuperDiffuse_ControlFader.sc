@@ -92,7 +92,7 @@ SuperDiffuse_ControlFader : SuperDiffuse_Subject {
 
 		m_layout = VLayout();
 		// Slider displays linearly, but values are actually exponential - this stops graphical 'slipping' when moving manually
-		m_slider = Slider().maxWidth_(50).action_({|v| this.valueAction_(v.value)}).value_(this.value);
+		m_slider = Slider().maxWidth_(50).maxHeight_(100).action_({|v| this.valueAction_(v.value)}).value_(this.value);
 		//m_midiLearnButton = Button().maxWidth_(50).states_([["L"]]).action_({ this.learn; });
 		m_layout.add(m_slider,align:\center);
 		//m_layout.add(m_midiLearnButton);

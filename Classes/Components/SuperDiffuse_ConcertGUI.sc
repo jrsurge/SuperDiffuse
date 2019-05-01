@@ -3,6 +3,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	var m_win, m_mainLayout, m_topLayout, m_leftLayout, m_piecesLayout, m_piecesButtonLayout, m_matricesLayout, m_matricesButtonLayout, m_rightLayout, m_playbackControlsLayout;
 
+	var m_meterBridge;
+
 	var m_piecesListView, m_pieceEditFunc, m_piecesUpButton, m_piecesDownButton, m_piecesAddButton, m_piecesRemoveButton;
 
 	var m_matricesListView, m_matrixEditFunc, m_matrixAddButton, m_matrixRemoveButton;
@@ -431,6 +433,10 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_rightLayout.add(m_parent.controls.gui,1);
 
+		m_meterBridge = SuperDiffuse_LevelMeters(m_parent.numOuts);
+
+		m_rightLayout.add(m_meterBridge.view, 0);
+
 		m_controlsConfigButton = Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders()});
 		m_saveButton = Button().states_([["Save Concert Configuration"]]).action_({
 			Dialog.savePanel({ | path |
@@ -456,12 +462,12 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_rightLayout.add(HLayout(nil, m_clock.gui, nil, StaticText().string_("Master:"),m_masterVolumeSlider, m_masterVolumeNumberBox).margins_([10,10,20,20]));
 
 		m_topLayout.add(m_rightLayout);
-		m_topLayout.setStretch(m_rightLayout,2);
+		m_topLayout.setStretch(m_rightLayout,1);
 
 		m_mainLayout.add(m_topLayout);
 		m_mainLayout.add(m_sfView, 3);
 
-		m_win.onClose_({ this.stop; m_parent.clear; });
+		m_win.onClose_({ this.stop; m_parent.clear; m_meterBridge.free; });
 
 		m_win.view.keyDownAction_({ | caller, modifiers, unicode, keycode |
 			case

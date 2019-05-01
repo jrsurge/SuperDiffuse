@@ -179,7 +179,11 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 			sig = In.ar(in,m_numOuts);
 			amps = In.kr(control, m_numOuts);
 
-			Out.ar(0, sig * Lag.kr(amps) * masterLevel);
+			sig = sig * Lag.kr(amps) * masterLevel;
+
+			SendPeakRMS.kr(sig, 10, 3, '/SuperDiffuse/OutLevels');
+
+			Out.ar(0, sig);
 		}).add;
 
 		"Adding sd_filterSynth".inform;
@@ -557,6 +561,18 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 	setMasterLevel { | level |
 		m_outGroup.set(\masterLevel, level);
+	}
+
+	numIns {
+		^m_numIns;
+	}
+
+	numOuts {
+		^m_numOuts;
+	}
+
+	numControls {
+		^m_numControls;
 	}
 
 }
