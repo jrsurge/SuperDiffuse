@@ -450,8 +450,10 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_rightLayout.add(m_meterBridge.view, 0);
 
 		m_controlsConfigButton = Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders()});
-		m_saveButton = Button().states_([["Save Concert Configuration"]]).action_({
-			if(m_parent.saveFileLoc == "")
+		m_saveButton = Button()
+		.states_([["Save Concert Configuration"]])
+		.mouseDownAction_({ | caller, x, y modifiers, buttonNumber, clickCount |
+			if((m_parent.saveFileLoc == "") || (clickCount > 1) )
 			{
 				Dialog.savePanel({ | path |
 					m_parent.createSaveFile(path);
