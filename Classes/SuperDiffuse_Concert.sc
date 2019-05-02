@@ -521,7 +521,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 		if(path != "")
 		{
-			m_saveFileLoc = path;
+			this.setSaveFileLoc(path);
 
 			dic = Dictionary();
 
@@ -548,6 +548,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 	setSaveFileLoc { | path |
 		m_saveFileLoc = path;
+		m_concertGUI.setWindowTitle(PathName(m_saveFileLoc).fileNameWithoutExtension);
 	}
 
 	saveFileLoc {

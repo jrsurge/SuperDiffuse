@@ -636,4 +636,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			}.defer(0.01);
 		}
 	}
+
+	setWindowTitle { | title |
+		m_win.name = "SuperDiffuse | v" ++ SuperDiffuse.version ++ " - " ++ title;
+	}
 }
