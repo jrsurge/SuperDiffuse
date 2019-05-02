@@ -14,6 +14,7 @@ list::
 ## The details of each piece (order in concert is also retained) - file location, name, matrix association, master fader value
 ## The details of each matrix - name, matrix values
 ## Control Fader assignments - Out1 listens to control1 etc...
+## The details of each filter set - name, settings etc...
 ## MIDI Configuration - MIDI Chan and CC for each Control Fader
 ::
 
@@ -22,6 +23,12 @@ Pressing the "Save Concert Configuration" button will open a save prompt. Save t
 
 note::
 Although it does not matter, it is recommended to use the extension ".sdc" (SuperDiffuse Configuration).
+::
+
+note::
+SuperDiffuse will remember this savefile location and save any necessary changes there automatically.
+
+To save into a new file, a Save As, double-click the "Save Concert Configuration" button.
 ::
 
 section::Loading Concerts
