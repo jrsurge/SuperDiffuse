@@ -20,6 +20,7 @@ SuperDiffuse {
 		});
 
 		concert = SuperDiffuse_Concert(dic[\setupInfo][0], dic[\setupInfo][1], dic[\setupInfo][2]);
+		concert.setSaveFileLoc(pathToSaveFile);
 
 		dic[\pieces].do({|pieceInfo|
 			var piece = SuperDiffuse_Piece(pieceInfo[0]);
@@ -126,6 +127,8 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	var m_filterManager;
 
 	var m_playingPiece;
+
+	var m_saveFileLoc = "";
 
 	*new { | numIns, numOuts, numControls |
 		^super.new.ninit(numIns,numOuts,numControls);
@@ -367,6 +370,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 				})
 			)
 		));
+		win.onClose_({this.createSaveFile(m_saveFileLoc);});
 		win.front;
 	}
 
@@ -411,6 +415,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 				)
 			)
 		);
+		win.onClose_({this.createSaveFile(m_saveFileLoc);});
 		win.front;
 	}
 
@@ -459,6 +464,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		layout.add(VLayout(filterList, HLayout(filterAddButton, filterRemoveButton)));
 
 		win.layout_(layout);
+		win.onClose_({this.createSaveFile(m_saveFileLoc);});
 		win.front;
 	}
 
@@ -513,26 +519,39 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	createSaveFile { | path |
 		var dic;
 
-		dic = Dictionary();
+		if(path != "")
+		{
+			m_saveFileLoc = path;
 
-		dic.add(\setupInfo -> [m_numIns, m_numOuts, m_numControls]);
-		dic.add(\pieces -> m_pieces.collect({|piece| [piece.path, piece.name, piece.matrixInd, piece.masterLevel, piece.filterInd] }));
-		dic.add(\matrices -> m_matrices.collect({|matrix| [matrix.name, matrix.matrix] }));
+			dic = Dictionary();
 
-		dic.add(
-			\filterSets ->
-			m_filterManager.filterSets.collect({| filterSet |
-				[filterSet.name, filterSet.inFilters.collect({|fu| fu.saveInfo; }), filterSet.outFilters.collect({|fu| fu.saveInfo; })];
-			})
-		);
+			dic.add(\setupInfo -> [m_numIns, m_numOuts, m_numControls]);
+			dic.add(\pieces -> m_pieces.collect({|piece| [piece.path, piece.name, piece.matrixInd, piece.masterLevel, piece.filterInd] }));
+			dic.add(\matrices -> m_matrices.collect({|matrix| [matrix.name, matrix.matrix] }));
+
+			dic.add(
+				\filterSets ->
+				m_filterManager.filterSets.collect({| filterSet |
+					[filterSet.name, filterSet.inFilters.collect({|fu| fu.saveInfo; }), filterSet.outFilters.collect({|fu| fu.saveInfo; })];
+				})
+			);
 
 
-		dic.add(\controlsConfig -> m_outFaders.collect({|outFader| m_masterControl.indexOf(outFader.subject)}));
-		dic.add(\midiConfig -> m_masterControl.faders.collect({|fader| [fader.midiChan, fader.midiCC]}));
+			dic.add(\controlsConfig -> m_outFaders.collect({|outFader| m_masterControl.indexOf(outFader.subject)}));
+			dic.add(\midiConfig -> m_masterControl.faders.collect({|fader| [fader.midiChan, fader.midiCC]}));
 
-		File.use(path, "w", { | file |
-			file.write(dic.asCompileString);
-		});
+			File.use(path, "w", { | file |
+				file.write(dic.asCompileString);
+			});
+		}
+	}
+
+	setSaveFileLoc { | path |
+		m_saveFileLoc = path;
+	}
+
+	saveFileLoc {
+		^ m_saveFileLoc;
 	}
 
 	loaded {

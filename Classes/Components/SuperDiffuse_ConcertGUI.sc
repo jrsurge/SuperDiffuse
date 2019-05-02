@@ -98,6 +98,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 						m_matricesListView.valueAction_(piece.matrixInd);
 						this.updateMatrices;
 						win.close;
+						m_parent.createSaveFile(m_parent.saveFileLoc);
 					});
 
 					buttonLayout.add(cancelButton);
@@ -127,10 +128,13 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_masterVolumeNumberBox = NumberBox().maxWidth_(50).action_({ | caller |
 			m_parent.setMasterLevel(caller.value ** 2);
 			m_masterVolumeSlider.value_(caller.value);
+
 			if(m_piecesListView.selection[0] != nil)
 			{
 				m_parent.pieces[m_piecesListView.selection[0]].masterLevel_(caller.value);
-			}
+			};
+
+			m_parent.createSaveFile(m_parent.saveFileLoc);
 		});
 
 		m_masterVolumeSlider = Slider().orientation_(\horizontal).action_({ | caller |
@@ -165,6 +169,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				m_parent.pieces.swap(sel,sel-1);
 				this.updatePieces;
 				m_piecesListView.selection = sel - 1;
+				m_parent.createSaveFile(m_parent.saveFileLoc);
 			};
 		});
 
@@ -176,6 +181,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				m_parent.pieces.swap(sel,sel + 1);
 				this.updatePieces;
 				m_piecesListView.value = sel + 1;
+				m_parent.createSaveFile(m_parent.saveFileLoc);
 			};
 		});
 
@@ -197,6 +203,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 					m_piecesListView.valueAction_(0);
 				};
 			},multipleSelection:true);
+			m_parent.createSaveFile(m_parent.saveFileLoc);
 		});
 		m_piecesRemoveButton = Button().states_([["-"]]).action_({
 			var sel;
@@ -205,10 +212,13 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			if(sel != nil)
 			{
 				m_parent.removePiece(m_parent.pieces[sel]);
+
 				if(sel != 0)
 				{
 					m_piecesListView.valueAction_(sel - 1);
-				}
+				};
+
+				m_parent.createSaveFile(m_parent.saveFileLoc);
 			};
 		});
 
@@ -276,6 +286,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 							this.updateMatrices;
 
+							m_parent.createSaveFile(m_parent.saveFileLoc);
 							win.close;
 						});
 
@@ -370,6 +381,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			sel = m_matricesListView.selection[0];
 			m_parent.addMatrix("Untitled");
 			m_matricesListView.value_(sel);
+			m_parent.createSaveFile(m_parent.saveFileLoc);
 		});
 
 		m_matricesButtonLayout.add(m_matrixAddButton);
@@ -390,13 +402,13 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 						{
 							piece.matrixInd = 0;
 						}
-					})
+					});
+					m_parent.createSaveFile(m_parent.saveFileLoc);
 				}
 				{
 					"Unable to remove initial matrix".warn;
 				}
 			};
-
 		});
 
 		m_matricesButtonLayout.add(m_matrixRemoveButton);
@@ -439,9 +451,15 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_controlsConfigButton = Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders()});
 		m_saveButton = Button().states_([["Save Concert Configuration"]]).action_({
-			Dialog.savePanel({ | path |
-				m_parent.createSaveFile(path);
-			});
+			if(m_parent.saveFileLoc == "")
+			{
+				Dialog.savePanel({ | path |
+					m_parent.createSaveFile(path);
+				});
+			}
+			{
+				m_parent.createSaveFile(m_parent.saveFileLoc);
+			}
 		});
 		m_midiConfigButton = Button().states_([["Configure MIDI"]]).action_({m_parent.configureMIDI;});
 
