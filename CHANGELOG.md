@@ -8,6 +8,13 @@
 * Added meter bridge to GUI (post-master fader)
 * Added Ctrl+D for duplicating Matrices
 * Added Ctrl+D for duplicating FilterSets
+* Added auto-save. If you've saved the concert once (or loaded it), any changes that would require a save now automatically trigger a resave:
+    * Adding/Removing/Swapping/Editing Pieces
+    * Adding/Removing/Editing Matrices
+    * Adding/Removing/Editing Filter Sets
+    * Setting Master Fader
+    * Setting Control Faders
+    * Setting MIDI Config
 
 ### Modifications
 * Changed Master Fader to behave exponentially (like control faders). The numberbox values are linear, but they apply exponentially.
