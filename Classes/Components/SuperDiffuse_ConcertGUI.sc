@@ -19,6 +19,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 	//var m_backButton, m_playStopButton, m_forwardButton;
 	var m_playheadRoutine;
 
+	var m_locked, m_sfViewHidden;
+
 	*new { | parent |
 		^super.new(parent).ninit(parent);
 	}
@@ -31,6 +33,9 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	initWindow {
 		var screenWidth, screenHeight, winWidth, winHeight, winX, winY;
+
+		m_locked = false;
+		m_sfViewHidden = false;
 
 		screenWidth = Window.screenBounds.width;
 		screenHeight = Window.screenBounds.height;
@@ -474,6 +479,22 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				m_filterConfigButton,
 				m_saveButton,
 				Button().states_([["Lock Interface"],["Unlock Interface"]]).action_({ | caller | this.lockInterface(caller.value); })
+				Button().states_([["Hide Waveform"], ["Show Waveform"]]).action_({| caller |
+					var tglState = (1 - caller.value).asBoolean;
+
+					m_sfViewHidden = caller.value.asBoolean;
+
+					m_sfView.drawsWaveForm_(tglState);
+					m_sfView.timeCursorOn_(tglState);
+
+					if(m_locked == false)
+					{
+						m_sfView.acceptsMouse_(tglState);
+					};
+
+					m_sfView.focus;
+
+				})
 			).margins_([10,10,20,20])
 		);
 
@@ -500,6 +521,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	lockInterface { | state |
 		var invState = 1 - state;
+
+		m_locked = state.asBoolean;
 
 		m_matricesListView.enabled_(invState);
 		m_matrixAddButton.enabled_(invState);
@@ -529,11 +552,20 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			});
 			m_matricesListView.keyDownAction_({});
 
+			m_sfView.acceptsMouse_(false);
+
 		}
 		{
 			m_piecesListView.keyDownAction_(m_pieceEditFunc);
 			m_matricesListView.keyDownAction_(m_matrixEditFunc);
+
+			if(m_sfViewHidden == false)
+			{
+				m_sfView.acceptsMouse_(true);
+			};
 		};
+
+		m_sfView.focus;
 	}
 
 	updatePieces {
