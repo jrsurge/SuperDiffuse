@@ -140,6 +140,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			};
 
 			m_parent.createSaveFile(m_parent.saveFileLoc);
+
+			m_sfView.focus;
 		});
 
 		m_masterVolumeSlider = Slider().orientation_(\horizontal).action_({ | caller |
@@ -160,6 +162,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			m_sfView.setSelection(0, [0,0]);
 			m_sfView.timeCursorPosition_(0);
 			m_clock.reset;
+			lv.focus;
 		})
 		.keyDownAction_(m_pieceEditFunc);
 
@@ -176,6 +179,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				m_piecesListView.selection = sel - 1;
 				m_parent.createSaveFile(m_parent.saveFileLoc);
 			};
+
+			m_piecesListView.focus;
 		});
 
 		m_piecesDownButton = Button().states_([["v"]]).action_({ | btn |
@@ -188,6 +193,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				m_piecesListView.value = sel + 1;
 				m_parent.createSaveFile(m_parent.saveFileLoc);
 			};
+
+			m_piecesListView.focus;
 		});
 
 		m_piecesAddButton = Button().states_([["+"]]).action_({
@@ -209,6 +216,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				};
 			},multipleSelection:true);
 			m_parent.createSaveFile(m_parent.saveFileLoc);
+
+			m_piecesListView.focus;
 		});
 		m_piecesRemoveButton = Button().states_([["-"]]).action_({
 			var sel;
@@ -225,6 +234,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 				m_parent.createSaveFile(m_parent.saveFileLoc);
 			};
+
+			m_piecesListView.focus;
 		});
 
 		m_piecesButtonLayout.add(m_piecesUpButton);
@@ -387,6 +398,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			m_parent.addMatrix("Untitled");
 			m_matricesListView.value_(sel);
 			m_parent.createSaveFile(m_parent.saveFileLoc);
+			m_matricesListView.focus;
 		});
 
 		m_matricesButtonLayout.add(m_matrixAddButton);
@@ -414,6 +426,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 					"Unable to remove initial matrix".warn;
 				}
 			};
+
+			m_matricesListView.focus;
 		});
 
 		m_matricesButtonLayout.add(m_matrixRemoveButton);
@@ -454,7 +468,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		m_rightLayout.add(m_meterBridge.view, 0);
 
-		m_controlsConfigButton = Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders()});
+		m_controlsConfigButton = Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders(); m_sfView.focus;});
 		m_saveButton = Button()
 		.states_([["Save Concert Configuration"]])
 		.mouseDownAction_({ | caller, x, y modifiers, buttonNumber, clickCount |
@@ -466,11 +480,12 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			}
 			{
 				m_parent.createSaveFile(m_parent.saveFileLoc);
-			}
-		});
-		m_midiConfigButton = Button().states_([["Configure MIDI"]]).action_({m_parent.configureMIDI;});
+			};
+		})
+		.mouseUpAction_({m_sfView.focus;});
+		m_midiConfigButton = Button().states_([["Configure MIDI"]]).action_({m_parent.configureMIDI; m_sfView.focus;});
 
-		m_filterConfigButton = Button().states_([["Configure Filters"]]).action_({m_parent.configureFilters;});
+		m_filterConfigButton = Button().states_([["Configure Filters"]]).action_({m_parent.configureFilters; m_sfView.focus; });
 
 		m_rightLayout.add(
 			HLayout(
@@ -478,7 +493,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				m_midiConfigButton,
 				m_filterConfigButton,
 				m_saveButton,
-				Button().states_([["Lock Interface"],["Unlock Interface"]]).action_({ | caller | this.lockInterface(caller.value); })
+				Button().states_([["Lock Interface"],["Unlock Interface"]]).action_({ | caller | this.lockInterface(caller.value); m_sfView.focus;}),
 				Button().states_([["Hide Waveform"], ["Show Waveform"]]).action_({| caller |
 					var tglState = (1 - caller.value).asBoolean;
 
