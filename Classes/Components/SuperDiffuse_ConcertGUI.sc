@@ -1,7 +1,7 @@
 SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 	var m_parent;
 
-	var m_win, m_mainLayout, m_topLayout, m_leftLayout, m_piecesLayout, m_piecesButtonLayout, m_matricesLayout, m_matricesButtonLayout, m_rightLayout, m_playbackControlsLayout;
+	var m_win, m_layout;
 
 	var m_meterBridge;
 
@@ -16,7 +16,6 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 	var m_clock;
 
 	var m_sfView;
-	//var m_backButton, m_playStopButton, m_forwardButton;
 	var m_playheadRoutine;
 
 	var m_locked, m_sfViewHidden;
@@ -46,23 +45,41 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 
 		m_win = Window("SuperDiffuse | v" ++ SuperDiffuse.version, Rect(winX,winY,winWidth,winHeight));
-		m_mainLayout = VLayout();
-		m_topLayout = HLayout();
-		m_leftLayout = HLayout();
-		m_piecesLayout = VLayout();
-		m_matricesLayout = VLayout();
-		m_rightLayout = VLayout();
 
-		m_piecesButtonLayout = HLayout();
-		m_matricesButtonLayout = HLayout();
-		m_playbackControlsLayout = HLayout();
+		m_layout = GridLayout();
 
-		m_win.layout_(m_mainLayout);
+		this.prCreatePiecesView;
+		this.prCreateMatricesView;
+		this.prCreateControlsView;
+		this.prCreateSfView;
 
+		m_layout.setColumnStretch(0, 0);
+		m_layout.setColumnStretch(1, 0);
+		m_layout.setColumnStretch(2, 1);
+
+		m_layout.setRowStretch(0, 0);
+		m_layout.setRowStretch(1, 0);
+		m_layout.setRowStretch(2, 0);
+		m_layout.setRowStretch(3, 1);
+
+		m_win.view.keyDownAction_({ | caller, modifiers, unicode, keycode |
+			case
+			{keycode == 32} { if(m_parent.isPlaying) { this.stop } { this.play }; }
+			{keycode == 13} { m_sfView.timeCursorPosition_(0); m_clock.reset; m_sfView.setSelection(0,[0,0]); }
+		});
+
+		m_win.onClose_({ this.stop; m_parent.clear; m_meterBridge.free; });
+
+		m_win.layout_(m_layout);
+
+		m_win.front;
+	}
+
+	prCreatePiecesView {
 		m_pieceEditFunc = { | caller, char, modifiers, unicode, keycode, key |
 			if(caller.hasFocus)
 			{
-				if( (caller.selection[0] != nil) && (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd))
+				if( (caller.selection[0] != nil) && (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd) && (m_locked == false))
 				{
 					var win, layout, nameLayout, textEdit, buttonLayout, okButton, cancelButton, matrixLayout, matrixMenu, filterLayout, filterMenu;
 					var sel, piece;
@@ -116,37 +133,21 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 					win.layout_(layout);
 					win.front;
-				};
-				if( (caller.selection[0] != nil) && (key == 0x20) )
+				}
 				{
-					if(m_parent.isPlaying)
+					if( (caller.selection[0] != nil) && (key == 0x20) )
 					{
-						this.stop;
+						if(m_parent.isPlaying)
+						{
+							this.stop;
+						}
+						{
+							this.play(caller.selection[0]);
+						};
 					}
-					{
-						this.play(caller.selection[0]);
-					};
 				}
 			};
 		};
-
-		m_masterVolumeNumberBox = NumberBox().maxWidth_(50).action_({ | caller |
-			m_parent.setMasterLevel(caller.value ** 2);
-			m_masterVolumeSlider.value_(caller.value);
-
-			if(m_piecesListView.selection[0] != nil)
-			{
-				m_parent.pieces[m_piecesListView.selection[0]].masterLevel_(caller.value);
-			};
-
-			m_parent.createSaveFile(m_parent.saveFileLoc);
-
-			m_sfView.focus;
-		});
-
-		m_masterVolumeSlider = Slider().orientation_(\horizontal).action_({ | caller |
-			m_masterVolumeNumberBox.valueAction_(caller.value);
-		});
 
 		m_piecesListView = ListView().action_({ | lv |
 			this.updateSFView;
@@ -166,38 +167,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		})
 		.keyDownAction_(m_pieceEditFunc);
 
-		m_piecesLayout.add(StaticText().string_("Pieces"),align:\center);
-		m_piecesLayout.add(m_piecesListView);
-
-		m_piecesUpButton = Button().states_([["^"]]).action_({ | btn |
-			var sel;
-			sel = m_piecesListView.selection[0];
-			if( (sel != 0) && (sel != nil) )
-			{
-				m_parent.pieces.swap(sel,sel-1);
-				this.updatePieces;
-				m_piecesListView.selection = sel - 1;
-				m_parent.createSaveFile(m_parent.saveFileLoc);
-			};
-
-			m_piecesListView.focus;
-		});
-
-		m_piecesDownButton = Button().states_([["v"]]).action_({ | btn |
-			var sel;
-			sel = m_piecesListView.selection[0];
-			if( (sel != (m_parent.pieces.size-1)) && (sel != nil) )
-			{
-				m_parent.pieces.swap(sel,sel + 1);
-				this.updatePieces;
-				m_piecesListView.value = sel + 1;
-				m_parent.createSaveFile(m_parent.saveFileLoc);
-			};
-
-			m_piecesListView.focus;
-		});
-
-		m_piecesAddButton = Button().states_([["+"]]).action_({
+		m_piecesAddButton = Button().minWidth_(10).states_([["+"]]).action_({
 			Dialog.openPanel({|v|
 				var sizeBefore, sizeAfter;
 
@@ -219,7 +189,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 			m_piecesListView.focus;
 		});
-		m_piecesRemoveButton = Button().states_([["-"]]).action_({
+
+		m_piecesRemoveButton = Button().minWidth_(10).states_([["-"]]).action_({
 			var sel;
 			sel = m_piecesListView.selection[0];
 
@@ -238,15 +209,53 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			m_piecesListView.focus;
 		});
 
-		m_piecesButtonLayout.add(m_piecesUpButton);
-		m_piecesButtonLayout.add(m_piecesDownButton);
-		m_piecesButtonLayout.add(m_piecesAddButton);
-		m_piecesButtonLayout.add(m_piecesRemoveButton);
+		m_piecesUpButton = Button().minWidth_(10).states_([["^"]]).action_({ | btn |
+			var sel;
+			sel = m_piecesListView.selection[0];
+			if( (sel != 0) && (sel != nil) )
+			{
+				m_parent.pieces.swap(sel,sel-1);
+				this.updatePieces;
+				m_piecesListView.selection = sel - 1;
+				m_parent.createSaveFile(m_parent.saveFileLoc);
+			};
 
-		m_piecesLayout.add(m_piecesButtonLayout);
+			m_piecesListView.focus;
+		});
 
-		m_leftLayout.add(m_piecesLayout);
+		m_piecesDownButton = Button().minWidth_(10).states_([["v"]]).action_({ | btn |
+			var sel;
+			sel = m_piecesListView.selection[0];
+			if( (sel != (m_parent.pieces.size-1)) && (sel != nil) )
+			{
+				m_parent.pieces.swap(sel,sel + 1);
+				this.updatePieces;
+				m_piecesListView.value = sel + 1;
+				m_parent.createSaveFile(m_parent.saveFileLoc);
+			};
 
+			m_piecesListView.focus;
+		});
+
+		m_layout.addSpanning(
+			VLayout(
+				StaticText().string_("Pieces").align_(\center),
+				m_piecesListView,
+				HLayout(
+					m_piecesAddButton,
+					m_piecesRemoveButton,
+					m_piecesUpButton,
+					m_piecesDownButton,
+				)
+			),
+			row:0,
+			column:0,
+			rowSpan:4,
+			columnSpan:1
+		);
+	}
+
+	prCreateMatricesView {
 		m_matrixEditFunc = { | caller, char, modifiers, unicode, keycode, key |
 			if(caller.hasFocus)
 			{
@@ -267,7 +276,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 							}
 						};
 					}
-					{ (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd) } {
+					{ (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd) && (m_locked == false) } {
 						var win, layout, fieldLayout, textEdit, buttonLayout, matrixLayout, okButton, cancelButton, matrixScrollView, matrixScrollCanvas;
 						var sel, matrix;
 						var tmpMatrix;
@@ -389,10 +398,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		})
 		.keyDownAction_(m_matrixEditFunc);
 
-		m_matricesLayout.add(StaticText().string_("Matrices"),align:\center);
-		m_matricesLayout.add(m_matricesListView);
-
-		m_matrixAddButton = Button().states_([["+"]]).action_({
+		m_matrixAddButton = Button().minWidth_(10).states_([["+"]]).action_({
 			var sel;
 			sel = m_matricesListView.selection[0];
 			m_parent.addMatrix("Untitled");
@@ -401,9 +407,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			m_matricesListView.focus;
 		});
 
-		m_matricesButtonLayout.add(m_matrixAddButton);
-
-		m_matrixRemoveButton = Button().states_([["-"]]).action_({
+		m_matrixRemoveButton = Button().minWidth_(10).states_([["-"]]).action_({
 			var sel;
 
 			sel = m_matricesListView.selection[0];
@@ -430,16 +434,132 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			m_matricesListView.focus;
 		});
 
-		m_matricesButtonLayout.add(m_matrixRemoveButton);
+		m_layout.addSpanning(
+			VLayout(
+				StaticText().string_("Matrices").align_(\center),
+				m_matricesListView,
+				HLayout(
+					m_matrixAddButton,
+					m_matrixRemoveButton
+				)
+			),
+			row: 0,
+			column: 1,
+			rowSpan: 4,
+			columnSpan: 1
+		);
+	}
 
-		m_matricesLayout.add(m_matricesButtonLayout);
+	prCreateControlsView {
+		m_masterVolumeNumberBox = NumberBox().maxWidth_(50).action_({ | caller |
+			m_parent.setMasterLevel(caller.value ** 2);
+			m_masterVolumeSlider.value_(caller.value);
 
-		m_leftLayout.add(m_matricesLayout);
+			if(m_piecesListView.selection[0] != nil)
+			{
+				m_parent.pieces[m_piecesListView.selection[0]].masterLevel_(caller.value);
+			};
+
+			m_parent.createSaveFile(m_parent.saveFileLoc);
+
+			m_sfView.focus;
+		});
+
+		m_masterVolumeSlider = Slider().orientation_(\horizontal).action_({ | caller |
+			m_masterVolumeNumberBox.valueAction_(caller.value);
+		});
+
+		m_meterBridge = SuperDiffuse_LevelMeters(m_parent.numOuts);
 
 
-		m_topLayout.add(m_leftLayout);
-		m_topLayout.setStretch(m_leftLayout,0);
+		m_controlsConfigButton = Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders(); m_sfView.focus;});
+		m_saveButton = Button()
+		.states_([["Save Concert Configuration"]])
+		.mouseDownAction_({ | caller, x, y, modifiers, buttonNumber, clickCount |
+			if((m_parent.saveFileLoc == "") || (clickCount > 1) )
+			{
+				Dialog.savePanel({ | path |
+					m_parent.createSaveFile(path);
+				});
+			}
+			{
+				m_parent.createSaveFile(m_parent.saveFileLoc);
+			};
+		})
+		.mouseUpAction_({m_sfView.focus;});
 
+		m_midiConfigButton = Button().states_([["Configure MIDI"]]).action_({m_parent.configureMIDI; m_sfView.focus;});
+
+		m_filterConfigButton = Button().states_([["Configure Filters"]]).action_({m_parent.configureFilters; m_sfView.focus; });
+
+		m_clock = SuperDiffuse_Clock();
+
+		m_layout.addSpanning(
+			m_parent.controls.gui,
+			row: 0,
+			column: 2,
+			rowSpan: 1,
+			columnSpan: 1
+		);
+
+		m_layout.addSpanning(
+			m_meterBridge.view,
+			row: 1,
+			column: 2,
+			rowSpan: 1,
+			columnSpan: 1
+		);
+
+		m_layout.addSpanning(
+			HLayout(
+				m_controlsConfigButton,
+				m_midiConfigButton,
+				m_filterConfigButton,
+				m_saveButton,
+				Button().states_([["Lock Interface"],["Unlock Interface"], ["Unlock Interface"]])
+				.action_({ | caller |
+					this.lockInterface(caller.value > 0); m_sfView.focus;
+				}),
+				Button().states_([["Hide Waveform"], ["Show Waveform"]]).action_({| caller |
+					var tglState = (1 - caller.value).asBoolean;
+
+					m_sfViewHidden = caller.value.asBoolean;
+
+					m_sfView.drawsWaveForm_(tglState);
+					m_sfView.timeCursorOn_(tglState);
+
+					if(m_locked == false)
+					{
+						m_sfView.acceptsMouse_(tglState);
+					};
+
+					m_sfView.focus;
+
+				})
+			),
+			row: 2,
+			column: 2,
+			rowSpan: 1,
+			columnSpan: 1
+		);
+
+		m_layout.addSpanning(
+			HLayout(
+				nil,
+				m_clock.gui,
+				nil,
+				StaticText().string_("Master:"),
+				m_masterVolumeSlider,
+				m_masterVolumeNumberBox,
+			).margins_([0,15,0,15]),
+			row: 3,
+			column: 2,
+			rowSpan: 1,
+			columnSpan: 1
+		);
+	}
+
+	prCreateSfView {
 		m_sfView = SoundFileView()
 		.minWidth_(500)
 		.gridOn_(false)
@@ -462,80 +582,17 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			}
 		});
 
-		m_rightLayout.add(m_parent.controls.gui,1);
-
-		m_meterBridge = SuperDiffuse_LevelMeters(m_parent.numOuts);
-
-		m_rightLayout.add(m_meterBridge.view, 0);
-
-		m_controlsConfigButton = Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders(); m_sfView.focus;});
-		m_saveButton = Button()
-		.states_([["Save Concert Configuration"]])
-		.mouseDownAction_({ | caller, x, y modifiers, buttonNumber, clickCount |
-			if((m_parent.saveFileLoc == "") || (clickCount > 1) )
-			{
-				Dialog.savePanel({ | path |
-					m_parent.createSaveFile(path);
-				});
-			}
-			{
-				m_parent.createSaveFile(m_parent.saveFileLoc);
-			};
-		})
-		.mouseUpAction_({m_sfView.focus;});
-		m_midiConfigButton = Button().states_([["Configure MIDI"]]).action_({m_parent.configureMIDI; m_sfView.focus;});
-
-		m_filterConfigButton = Button().states_([["Configure Filters"]]).action_({m_parent.configureFilters; m_sfView.focus; });
-
-		m_rightLayout.add(
-			HLayout(
-				m_controlsConfigButton,
-				m_midiConfigButton,
-				m_filterConfigButton,
-				m_saveButton,
-				Button().states_([["Lock Interface"],["Unlock Interface"]]).action_({ | caller | this.lockInterface(caller.value); m_sfView.focus;}),
-				Button().states_([["Hide Waveform"], ["Show Waveform"]]).action_({| caller |
-					var tglState = (1 - caller.value).asBoolean;
-
-					m_sfViewHidden = caller.value.asBoolean;
-
-					m_sfView.drawsWaveForm_(tglState);
-					m_sfView.timeCursorOn_(tglState);
-
-					if(m_locked == false)
-					{
-						m_sfView.acceptsMouse_(tglState);
-					};
-
-					m_sfView.focus;
-
-				})
-			).margins_([10,10,20,20])
+		m_layout.addSpanning(
+			m_sfView,
+			row: 4,
+			column: 0,
+			rowSpan: 1,
+			columnSpan: 3
 		);
-
-		m_clock = SuperDiffuse_Clock();
-
-		m_rightLayout.add(HLayout(nil, m_clock.gui, nil, StaticText().string_("Master:"),m_masterVolumeSlider, m_masterVolumeNumberBox).margins_([10,10,20,20]));
-
-		m_topLayout.add(m_rightLayout);
-		m_topLayout.setStretch(m_rightLayout,1);
-
-		m_mainLayout.add(m_topLayout);
-		m_mainLayout.add(m_sfView, 3);
-
-		m_win.onClose_({ this.stop; m_parent.clear; m_meterBridge.free; });
-
-		m_win.view.keyDownAction_({ | caller, modifiers, unicode, keycode |
-			case
-			{keycode == 32} { if(m_parent.isPlaying) { this.stop } { this.play }; }
-			{keycode == 13} { m_sfView.timeCursorPosition_(0); m_clock.reset; m_sfView.setSelection(0,[0,0]); }
-		});
-
-		m_win.front;
 	}
 
 	lockInterface { | state |
-		var invState = 1 - state;
+		var invState = state.not;
 
 		m_locked = state.asBoolean;
 
@@ -553,27 +610,10 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		if(state.asBoolean)
 		{
-			m_piecesListView.keyDownAction_({ | caller, modifiers, unicode, keycode |
-				if( (caller.selection[0] != nil) && (keycode == 32) )
-				{
-					if(m_parent.isPlaying)
-					{
-						this.stop;
-					}
-					{
-						this.play(caller.selection[0]);
-					};
-				};
-			});
-			m_matricesListView.keyDownAction_({});
-
 			m_sfView.acceptsMouse_(false);
 
 		}
 		{
-			m_piecesListView.keyDownAction_(m_pieceEditFunc);
-			m_matricesListView.keyDownAction_(m_matrixEditFunc);
-
 			if(m_sfViewHidden == false)
 			{
 				m_sfView.acceptsMouse_(true);
