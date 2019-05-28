@@ -150,7 +150,6 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		};
 
 		m_piecesListView = ListView().action_({ | lv |
-			this.updateSFView;
 			this.stop;
 			m_matricesListView.valueAction_(m_parent.pieces[lv.selection[0]].matrixInd);
 
@@ -160,6 +159,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				m_parent.filterManager.load(m_parent.pieces[lv.selection[0]].filterInd);
 			};
 
+			this.updateSFView;
 			m_sfView.setSelection(0, [0,0]);
 			m_sfView.timeCursorPosition_(0);
 			m_clock.reset;
@@ -647,10 +647,32 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		}
 	}
 
-	update {
-		this.updatePieces;
-		this.updateMatrices;
-		this.updateSFView;
+	updateWindowTitle {
+		var winTitle = "SuperDiffuse | v" ++ SuperDiffuse.version;
+
+		if(m_parent.saveFileLoc != "")
+		{
+			winTitle = winTitle ++ " - " ++ PathName(m_parent.saveFileLoc).fileNameWithoutExtension;
+		};
+
+		m_win.name = winTitle;
+	}
+
+	update { | notifyType |
+		switch(notifyType)
+		{\pieceAdded}{ this.updatePieces; }
+		{\pieceRemoved}{ this.updatePieces; this.updateSFView; }
+		{\pieceChanged}{ this.updateSFView; }
+		{\matrixAdded}{ this.updateMatrices; }
+		{\matrixRemoved}{ this.updateMatrices; }
+		{\saveFileLocChanged}{ this.updateWindowTitle; }
+		// default:
+		{
+			this.updatePieces;
+			this.updateMatrices;
+			this.updateSFView;
+			this.updateWindowTitle;
+		}
 	}
 
 	updatePlayhead { | start, end, sampleRate |
@@ -683,7 +705,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_playheadRoutine.play(SystemClock);
 	}
 
-	ready {
+	loaded {
 		if(m_piecesListView.items.size > 0)
 		{
 			m_piecesListView.valueAction_(0);
@@ -722,9 +744,5 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				m_clock.setTimeInSamples(m_sfView.timeCursorPosition);
 			}.defer(0.01);
 		}
-	}
-
-	setWindowTitle { | title |
-		m_win.name = "SuperDiffuse | v" ++ SuperDiffuse.version ++ " - " ++ title;
 	}
 }

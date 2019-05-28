@@ -3,6 +3,8 @@ SuperDiffuse {
 	classvar <version = "1.4.0";
 
 	*new { | numIns, numOuts, numControls |
+		var concert, gui;
+
 		if(Server.default.serverRunning.not)
 		{
 			Error("SuperDiffuse: Server isn't running. Boot the server with the correct numOuts").throw;
@@ -13,11 +15,14 @@ SuperDiffuse {
 			Error("Server doesn't have enough output channels - update Server.default.options.numOutputBusChannels").throw;
 		};
 
-		^SuperDiffuse_Concert(numIns, numOuts, numControls);
+		concert = SuperDiffuse_Concert(numIns, numOuts, numControls);
+		gui = SuperDiffuse_ConcertGUI(concert);
+
+		^concert;
 	}
 
 	*load { | pathToSaveFile |
-		var dic, concert;
+		var dic, concert, gui;
 
 		File.use(pathToSaveFile, "r", { | file |
 			dic = interpret(file.readAllString);
@@ -103,7 +108,8 @@ SuperDiffuse {
 			concert.assignMIDI(ind, conf[0], conf[1]);
 		});
 
-		concert.loaded;
+		gui = SuperDiffuse_ConcertGUI(concert);
+		gui.loaded;
 
 		^concert;
 	}
@@ -127,7 +133,6 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	var m_inBus, m_outBus, m_controlBus;
 	var m_patchers;
 	var m_inGroup, m_inFxGroup, m_patcherGroup, m_outFxGroup, m_outGroup;
-	var m_concertGUI;
 	var m_filterManager;
 
 	var m_playingPiece;
@@ -163,13 +168,14 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		m_numOuts.do({ | i |
 			m_outFaders.add(SuperDiffuse_OutFader(m_masterControl.fader(i%numControls), m_controlBus.subBus(i)));
 		});
-		m_concertGUI = SuperDiffuse_ConcertGUI(this);
 
 		Post << "*** Welcome to SuperDiffuse ***" "\nVersion " << SuperDiffuse.version << "\nCopyright(c) James Surgenor, 2016-2019\nDeveloped at the University of Sheffield Sound Studios\n\n";
 
 		Synth(\sd_outsynth,[\in, m_outBus, \control, m_controlBus], m_outGroup);
+	}
 
-		m_concertGUI.update;
+	notify { | notifyType |
+		m_observers.do(_.update(notifyType));
 	}
 
 	registerSynthDefs {
@@ -235,7 +241,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		if(piece.isKindOf(SuperDiffuse_Piece) && (m_pieces.includesEqual(piece) != true))
 		{
 			m_pieces.add(piece);
-			this.notify;
+			this.notify(\pieceAdded);
 		}
 	}
 
@@ -250,17 +256,18 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 		m_matrices.add(SuperDiffuse_Matrix.newFrom(refMatrix, name));
 
-		m_observers.do(_.updateMatrices);
+		this.notify(\matrixAdded);
 	}
 
 	removePiece { | piece |
 		m_pieces.remove(piece);
-		this.notify;
+		this.notify(\pieceRemoved);
 	}
 
 	removeMatrix { | matrix |
 		m_matrices.remove(matrix);
 		m_observers.do(_.updateMatrices);
+		this.notify(\matrixRemoved);
 	}
 
 	loadMatrix { | matrix |
@@ -551,17 +558,15 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	}
 
 	setSaveFileLoc { | path |
-		m_saveFileLoc = path;
-		m_concertGUI.setWindowTitle(PathName(m_saveFileLoc).fileNameWithoutExtension);
+		if(path != m_saveFileLoc)
+		{
+			m_saveFileLoc = path;
+			this.notify(\saveFileLocChanged);
+		};
 	}
 
 	saveFileLoc {
 		^ m_saveFileLoc;
-	}
-
-	loaded {
-		// should only be called from SuperDiffuse.load function - indicates we have loaded from a file and the first piece needs loading up..
-		m_concertGUI.ready;
 	}
 
 	play { | index, start, end |
