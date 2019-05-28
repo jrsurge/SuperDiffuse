@@ -76,7 +76,15 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			{keycode == 13} { m_sfView.timeCursorPosition_(0); m_clock.reset; m_sfView.setSelection(0,[0,0]); }
 		});
 
-		m_win.onClose_({ this.stop; m_parent.clear; m_meterBridge.free; });
+		m_win.onClose_({
+			this.stop;
+			m_parent.clear;
+
+			if(m_meterBridge.notNil)
+			{
+				m_meterBridge.free;
+			};
+		});
 
 		m_win.layout_(m_layout);
 
@@ -477,7 +485,15 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			m_masterVolumeNumberBox.valueAction_(caller.value);
 		});
 
-		m_meterBridge = SuperDiffuse_LevelMeters(m_parent.numOuts);
+		if(Main.versionAtLeast(3,9))
+		{
+			m_meterBridge = SuperDiffuse_LevelMeters(m_parent.numOuts);
+		}
+		{
+			"The MeterBridge requires SuperCollider >= 3.9.3".warn;
+
+			m_meterBridge = StaticText().string_("MeterBridge (requires SuperCollider version >= 3.9.3)").align_(\center);
+		};
 
 
 		m_controlsConfigButton = Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders(); m_sfView.focus;});
@@ -511,7 +527,13 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		);
 
 		m_layout.addSpanning(
-			m_meterBridge.view,
+			if(Main.versionAtLeast(3,9))
+			{
+				m_meterBridge.view
+			}
+			{
+				m_meterBridge;
+			},
 			row: 1,
 			column: 2,
 			rowSpan: 1,
