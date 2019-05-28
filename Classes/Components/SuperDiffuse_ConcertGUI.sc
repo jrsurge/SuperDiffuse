@@ -26,15 +26,14 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	ninit { | parent |
 		m_parent = parent;
+		m_locked = false;
+		m_sfViewHidden = false;
 		this.initWindow;
 		this.update;
 	}
 
 	initWindow {
 		var screenWidth, screenHeight, winWidth, winHeight, winX, winY;
-
-		m_locked = false;
-		m_sfViewHidden = false;
 
 		screenWidth = Window.screenBounds.width;
 		screenHeight = Window.screenBounds.height;
