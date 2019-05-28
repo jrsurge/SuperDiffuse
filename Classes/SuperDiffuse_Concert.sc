@@ -3,13 +3,17 @@ SuperDiffuse {
 	classvar <version = "1.4.0";
 
 	*new { | numIns, numOuts, numControls |
+		if(Server.default.serverRunning.not)
+		{
+			Error("SuperDiffuse: Server isn't running. Boot the server with the correct numOuts").throw;
+		};
+
 		if(numOuts > Server.default.options.numOutputBusChannels)
 		{
 			Error("Server doesn't have enough output channels - update Server.default.options.numOutputBusChannels").throw;
-		}
-		{
-			^SuperDiffuse_Concert(numIns, numOuts, numControls);
-		}
+		};
+
+		^SuperDiffuse_Concert(numIns, numOuts, numControls);
 	}
 
 	*load { | pathToSaveFile |
