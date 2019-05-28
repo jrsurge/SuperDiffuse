@@ -32,8 +32,8 @@ SuperDiffuse_FilterSet
 
 	initFrom { | filterSet, name |
 		m_name = name;
-		m_inFilters = filterSet.inFilters.deepCopy;
-		m_outFilters = filterSet.outFilters.deepCopy;
+		m_inFilters = filterSet.inFilters.deepCopy.do({ | filterUnit |filterUnit.init; });
+		m_outFilters = filterSet.outFilters.deepCopy.do({ | filterUnit | filterUnit.init; });
 	}
 
 	inFilterAt { | ind |
