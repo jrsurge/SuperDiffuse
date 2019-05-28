@@ -5,6 +5,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	var m_meterBridge;
 
+	var m_firstPiece;
+
 	var m_piecesListView, m_pieceEditFunc, m_piecesUpButton, m_piecesDownButton, m_piecesAddButton, m_piecesRemoveButton;
 
 	var m_matricesListView, m_matrixEditFunc, m_matrixAddButton, m_matrixRemoveButton;
@@ -26,10 +28,17 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	ninit { | parent |
 		m_parent = parent;
+		m_firstPiece = true;
 		m_locked = false;
 		m_sfViewHidden = false;
+
 		this.initWindow;
 		this.update;
+
+		if(m_parent.pieces.size > 0)
+		{
+			this.loadFirstPiece;
+		};
 	}
 
 	initWindow {
@@ -659,7 +668,13 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	update { | notifyType |
 		switch(notifyType)
-		{\pieceAdded}{ this.updatePieces; }
+		{\pieceAdded}{
+			this.updatePieces;
+			if(m_firstPiece)
+			{
+				this.loadFirstPiece;
+			}
+		}
 		{\pieceRemoved}{ this.updatePieces; this.updateSFView; }
 		{\pieceChanged}{ this.updateSFView; }
 		{\matrixAdded}{ this.updateMatrices; }
@@ -704,10 +719,11 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_playheadRoutine.play(SystemClock);
 	}
 
-	loaded {
+	loadFirstPiece {
 		if(m_piecesListView.items.size > 0)
 		{
 			m_piecesListView.valueAction_(0);
+			m_firstPiece = false;
 		}
 	}
 

@@ -109,7 +109,6 @@ SuperDiffuse {
 		});
 
 		gui = SuperDiffuse_ConcertGUI(concert);
-		gui.loaded;
 
 		^concert;
 	}
