@@ -1,15 +1,18 @@
 # SuperDiffuse Change Log
 
 ## Known issues
-[1] Moving control faders (MIDI) while a piece is loading will lock the interface, forcing a restart of SuperDiffuse. This appears to be a SuperCollider/Qt threading issue.
+- [1] Moving control faders (MIDI) while a piece is loading will lock the interface, forcing a restart of SuperDiffuse. This appears to be a SuperCollider/Qt threading issue.
+    * This may have been addressed in newer SC versions(?)
+- [2] Using the mouse-wheel in the Edit Matrix window when it has scrollbars can cause trouble. The NumberBox doesn't steal the mouse properly on mouse-wheel, so the scroll event propagates to the ScrollArea. I'm working on a PR to the main SuperCollider repo to address this.
 
 ## Version 1.4.0
-A big usability update. This version __requires SuperCollider >= 3.10__.
+A big usability update. This version __requires SuperCollider >= 3.9__.
 
 Core functionality is the same, but lots of new features to make things easier. Thanks to everyone who has used the system so far and provided invaluable feedback. In particular, this version features additions requested by Adrian Moore, Adam Stanovic, Hans Tutsku, and David Berezan; thank you all.
 
 ### New features
 * Added meter bridge to GUI (post-master fader)
+  * __NOTE__: requires SuperCollider >= 3.9.3 to function
 * Added Ctrl+D for duplicating Matrices.
 * Added Ctrl+D for duplicating FilterSets.
 * Added auto-save. If you've saved the concert once (or loaded it), any changes that would require a save now automatically trigger a resave:
