@@ -32,6 +32,8 @@ section::The single-window GUI
 SuperDiffuse uses a single-window interface:
 image::superdiffuseoverview.png::
 
+note::Since v1.4.0, the GUI now has a meter bridge to display the output levels (post-master fader)::
+
 The three main sections are outlined below, and have their own tutorial pages:
 
 subsection::Pieces

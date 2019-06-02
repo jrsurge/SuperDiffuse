@@ -10,7 +10,7 @@ section::Starting fresh
 See: link::Tutorials/01-IntroductionToSuperDiffuse##Starting a new concert::
 
 section::Loading a Concert
-See: link::Tutorials/05-LoadingSavingConcerts#Loading Concerts#Loading concerts::
+See: link::Tutorials/06-LoadingSavingConcerts#Loading Concerts#Loading concerts::
 
 section::Playing pieces
 See: link::Tutorials/04-ControlsInSuperDiffuse#Playing back pieces#Playing back pieces::
@@ -20,10 +20,14 @@ SuperDiffuse will stop playing automatically when it reaches the end - do not pr
 
 section::During rehearsals
 warning::
-Remember that the master volume will only be saved to the configuration file if you save the configuration file after it's set!
-
-It will remember when switching between pieces, but not reloading from a save file.
+The master level will automatically save (since v1.4.0) into the save file strong::provided the concert has been saved at least once::.
 ::
 
 section::Locking the interface
 To avoid accidentally changing critical settings during concerts, the "Lock Interface" button will disable any editing functionality of the GUI.
+note:: To unlock the interface again, click Unlock button twice.::
+
+Since v1.4.0, locking the interface will now disable mouse interaction with the SoundFileView. This provides a safer 'Concert Mode' approach.
+
+section::Hiding the waveform view
+Since v1.4.0, you can hide the waveform view. In addition to hiding the wavefrom, it will disable mouse interaction with the SoundFileView (keyboard shortcuts will still work).

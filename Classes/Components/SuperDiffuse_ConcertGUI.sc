@@ -1,7 +1,11 @@
 SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 	var m_parent;
 
-	var m_win, m_mainLayout, m_topLayout, m_leftLayout, m_piecesLayout, m_piecesButtonLayout, m_matricesLayout, m_matricesButtonLayout, m_rightLayout, m_playbackControlsLayout;
+	var m_win, m_layout;
+
+	var m_meterBridge;
+
+	var m_firstPiece;
 
 	var m_piecesListView, m_pieceEditFunc, m_piecesUpButton, m_piecesDownButton, m_piecesAddButton, m_piecesRemoveButton;
 
@@ -14,8 +18,9 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 	var m_clock;
 
 	var m_sfView;
-	//var m_backButton, m_playStopButton, m_forwardButton;
 	var m_playheadRoutine;
+
+	var m_locked, m_sfViewHidden;
 
 	*new { | parent |
 		^super.new(parent).ninit(parent);
@@ -23,8 +28,17 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	ninit { | parent |
 		m_parent = parent;
+		m_firstPiece = true;
+		m_locked = false;
+		m_sfViewHidden = false;
+
 		this.initWindow;
 		this.update;
+
+		if(m_parent.pieces.size > 0)
+		{
+			this.loadFirstPiece;
+		};
 	}
 
 	initWindow {
@@ -38,24 +52,50 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		winY = (screenHeight / 2 ) - (winHeight / 2);
 
 
-		m_win = Window("SuperDiffuse | v.1.3.0", Rect(winX,winY,winWidth,winHeight));
-		m_mainLayout = VLayout();
-		m_topLayout = HLayout();
-		m_leftLayout = HLayout();
-		m_piecesLayout = VLayout();
-		m_matricesLayout = VLayout();
-		m_rightLayout = VLayout();
+		m_win = Window("SuperDiffuse | v" ++ SuperDiffuse.version, Rect(winX,winY,winWidth,winHeight));
 
-		m_piecesButtonLayout = HLayout();
-		m_matricesButtonLayout = HLayout();
-		m_playbackControlsLayout = HLayout();
+		m_layout = GridLayout();
 
-		m_win.layout_(m_mainLayout);
+		this.prCreatePiecesView;
+		this.prCreateMatricesView;
+		this.prCreateControlsView;
+		this.prCreateSfView;
 
+		m_layout.setColumnStretch(0, 0);
+		m_layout.setColumnStretch(1, 0);
+		m_layout.setColumnStretch(2, 1);
+
+		m_layout.setRowStretch(0, 0);
+		m_layout.setRowStretch(1, 0);
+		m_layout.setRowStretch(2, 0);
+		m_layout.setRowStretch(3, 1);
+
+		m_win.view.keyDownAction_({ | caller, modifiers, unicode, keycode |
+			case
+			{keycode == 32} { if(m_parent.isPlaying) { this.stop } { this.play }; }
+			{keycode == 13} { m_sfView.timeCursorPosition_(0); m_clock.reset; m_sfView.setSelection(0,[0,0]); }
+		});
+
+		m_win.onClose_({
+			this.stop;
+			m_parent.clear;
+
+			if(m_meterBridge.notNil)
+			{
+				m_meterBridge.free;
+			};
+		});
+
+		m_win.layout_(m_layout);
+
+		m_win.front;
+	}
+
+	prCreatePiecesView {
 		m_pieceEditFunc = { | caller, char, modifiers, unicode, keycode, key |
 			if(caller.hasFocus)
 			{
-				if( (caller.selection[0] != nil) && (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd))
+				if( (caller.selection[0] != nil) && (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd) && (m_locked == false))
 				{
 					var win, layout, nameLayout, textEdit, buttonLayout, okButton, cancelButton, matrixLayout, matrixMenu, filterLayout, filterMenu;
 					var sel, piece;
@@ -96,6 +136,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 						m_matricesListView.valueAction_(piece.matrixInd);
 						this.updateMatrices;
 						win.close;
+						m_parent.createSaveFile(m_parent.saveFileLoc);
 					});
 
 					buttonLayout.add(cancelButton);
@@ -108,35 +149,23 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 					win.layout_(layout);
 					win.front;
-				};
-				if( (caller.selection[0] != nil) && (key == 0x20) )
+				}
 				{
-					if(m_parent.isPlaying)
+					if( (caller.selection[0] != nil) && (key == 0x20) )
 					{
-						this.stop;
+						if(m_parent.isPlaying)
+						{
+							this.stop;
+						}
+						{
+							this.play(caller.selection[0]);
+						};
 					}
-					{
-						this.play(caller.selection[0]);
-					};
 				}
 			};
 		};
 
-		m_masterVolumeNumberBox = NumberBox().maxWidth_(50).action_({ | caller |
-			m_parent.setMasterLevel(caller.value);
-			m_masterVolumeSlider.value_(caller.value);
-			if(m_piecesListView.selection[0] != nil)
-			{
-				m_parent.pieces[m_piecesListView.selection[0]].masterLevel_(caller.value);
-			}
-		});
-
-		m_masterVolumeSlider = Slider().orientation_(\horizontal).action_({ | caller |
-			m_masterVolumeNumberBox.valueAction_(caller.value);
-		});
-
 		m_piecesListView = ListView().action_({ | lv |
-			this.updateSFView;
 			this.stop;
 			m_matricesListView.valueAction_(m_parent.pieces[lv.selection[0]].matrixInd);
 
@@ -146,38 +175,15 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				m_parent.filterManager.load(m_parent.pieces[lv.selection[0]].filterInd);
 			};
 
+			this.updateSFView;
 			m_sfView.setSelection(0, [0,0]);
 			m_sfView.timeCursorPosition_(0);
 			m_clock.reset;
+			lv.focus;
 		})
 		.keyDownAction_(m_pieceEditFunc);
 
-		m_piecesLayout.add(StaticText().string_("Pieces"),align:\center);
-		m_piecesLayout.add(m_piecesListView);
-
-		m_piecesUpButton = Button().states_([["^"]]).action_({ | btn |
-			var sel;
-			sel = m_piecesListView.selection[0];
-			if( (sel != 0) && (sel != nil) )
-			{
-				m_parent.pieces.swap(sel,sel-1);
-				this.updatePieces;
-				m_piecesListView.selection = sel - 1;
-			};
-		});
-
-		m_piecesDownButton = Button().states_([["v"]]).action_({ | btn |
-			var sel;
-			sel = m_piecesListView.selection[0];
-			if( (sel != (m_parent.pieces.size-1)) && (sel != nil) )
-			{
-				m_parent.pieces.swap(sel,sel + 1);
-				this.updatePieces;
-				m_piecesListView.value = sel + 1;
-			};
-		});
-
-		m_piecesAddButton = Button().states_([["+"]]).action_({
+		m_piecesAddButton = Button().minWidth_(10).states_([["+"]]).action_({
 			Dialog.openPanel({|v|
 				var sizeBefore, sizeAfter;
 
@@ -195,152 +201,208 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 					m_piecesListView.valueAction_(0);
 				};
 			},multipleSelection:true);
+			m_parent.createSaveFile(m_parent.saveFileLoc);
+
+			m_piecesListView.focus;
 		});
-		m_piecesRemoveButton = Button().states_([["-"]]).action_({
+
+		m_piecesRemoveButton = Button().minWidth_(10).states_([["-"]]).action_({
 			var sel;
 			sel = m_piecesListView.selection[0];
 
 			if(sel != nil)
 			{
 				m_parent.removePiece(m_parent.pieces[sel]);
+
 				if(sel != 0)
 				{
 					m_piecesListView.valueAction_(sel - 1);
-				}
+				};
+
+				m_parent.createSaveFile(m_parent.saveFileLoc);
 			};
+
+			m_piecesListView.focus;
 		});
 
-		m_piecesButtonLayout.add(m_piecesUpButton);
-		m_piecesButtonLayout.add(m_piecesDownButton);
-		m_piecesButtonLayout.add(m_piecesAddButton);
-		m_piecesButtonLayout.add(m_piecesRemoveButton);
+		m_piecesUpButton = Button().minWidth_(10).states_([["^"]]).action_({ | btn |
+			var sel;
+			sel = m_piecesListView.selection[0];
+			if( (sel != 0) && (sel != nil) )
+			{
+				m_parent.pieces.swap(sel,sel-1);
+				this.updatePieces;
+				m_piecesListView.selection = sel - 1;
+				m_parent.createSaveFile(m_parent.saveFileLoc);
+			};
 
-		m_piecesLayout.add(m_piecesButtonLayout);
+			m_piecesListView.focus;
+		});
 
-		m_leftLayout.add(m_piecesLayout);
+		m_piecesDownButton = Button().minWidth_(10).states_([["v"]]).action_({ | btn |
+			var sel;
+			sel = m_piecesListView.selection[0];
+			if( (sel != (m_parent.pieces.size-1)) && (sel != nil) )
+			{
+				m_parent.pieces.swap(sel,sel + 1);
+				this.updatePieces;
+				m_piecesListView.value = sel + 1;
+				m_parent.createSaveFile(m_parent.saveFileLoc);
+			};
 
+			m_piecesListView.focus;
+		});
+
+		m_layout.addSpanning(
+			VLayout(
+				StaticText().string_("Pieces").align_(\center),
+				m_piecesListView,
+				HLayout(
+					m_piecesAddButton,
+					m_piecesRemoveButton,
+					m_piecesUpButton,
+					m_piecesDownButton,
+				)
+			),
+			row:0,
+			column:0,
+			rowSpan:4,
+			columnSpan:1
+		);
+	}
+
+	prCreateMatricesView {
 		m_matrixEditFunc = { | caller, char, modifiers, unicode, keycode, key |
 			if(caller.hasFocus)
 			{
-				if( (caller.selection[0] != nil) && (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd))
+				var selectedMatrix = caller.selection[0];
+
+				if(selectedMatrix != nil)
 				{
-					var win, layout, fieldLayout, textEdit, buttonLayout, matrixLayout, okButton, cancelButton, matrixScrollView, matrixScrollCanvas;
-					var sel, matrix;
-					var tmpMatrix;
-
-					sel = caller.selection[0];
-					matrix = m_parent.matrix(sel);
-					tmpMatrix = SuperDiffuse_Matrix.newFrom(matrix,"tmp");
-
-					win = Window("SuperDiffuse | Edit Matrix");
-					layout = VLayout();
-					fieldLayout = HLayout();
-					buttonLayout = HLayout();
-
-
-					fieldLayout.add(StaticText().string_("Name: "));
-					textEdit = TextField().string_(matrix.name);
-					fieldLayout.add(textEdit);
-
-					cancelButton = Button().states_([["Cancel"]]).action_({
-						win.close;
-					});
-					okButton = Button().states_([["OK"]]).action_({
-						if(textEdit.string != matrix.name)
-						{
-							matrix.name = textEdit.string;
-
-							caller.value_(sel);
-
-						};
-						matrix.matrix = tmpMatrix.matrix;
-						m_parent.loadMatrix(matrix);
-
-						this.updateMatrices;
-
-						win.close;
-					});
-
-					buttonLayout.add(cancelButton);
-					buttonLayout.add(okButton);
-
-					layout.add(fieldLayout);
-
-
-					matrixScrollView = ScrollView();
-					matrixScrollCanvas = View();
-					matrixScrollView.canvas_(matrixScrollCanvas);
-
-					matrixLayout = GridLayout();
-					matrixScrollCanvas.layout_(matrixLayout);
-
-					matrix.matrix.size.do({ | in |
-						matrix.matrix[0].size.do({ | out |
-							var numBox;
-
-							numBox = NumberBox()
-							.align_(\center)
-							.clipLo_(0)
-							.value_(tmpMatrix.matrix[in][out])
-							.action_({|caller|
-								tmpMatrix.matrix[in][out] = caller.value;
-
-								if(caller.value > 1)
-								{
-									caller.background_(Color.red);
-								}
-								{
-									if(caller.value > 0)
-									{
-										caller.background_(Color.green(1, caller.value));
-									}
-									{
-										caller.background_(Color.white);
-									};
-								};
-							})
-							.toolTip_("%:%".format(in+1, out+1));
-
-							if(tmpMatrix.matrix[in][out] > 1)
-							{
-								numBox.background_(Color.red);
-							}
-							{
-								if(tmpMatrix.matrix[in][out] > 0)
-								{
-									numBox.background_(Color.green(1,tmpMatrix.matrix[in][out]));
-								}
-								{
-									numBox.background_(Color.white);
-								};
-							};
-
-
-							matrixLayout.add(StaticText().string_("In%".format(in+1)).align_(\center), in+1, 0);
-							matrixLayout.add(StaticText().string_("Out%".format(out+1)).align_(\center), 0, out+1);
-							matrixLayout.add(numBox,in+1,out+1);
-						});
-					});
-
-					layout.add(matrixScrollView);
-
-					layout.add(buttonLayout);
-
-					win.layout_(layout);
-					win.front;
-				};
-				{
-					if( (caller.selection[0] != nil) && (key == 0x20))
-					{
+					case
+					{ key == 0x20 } {
 						if(m_parent.isPlaying)
 						{
 							this.stop;
 						}
 						{
-							this.play(caller.selection[0]);
+							if(m_piecesListView.selection[0] != nil)
+							{
+								this.play(m_piecesListView.selection[0]);
+							}
 						};
 					}
-				}
+					{ (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd) && (m_locked == false) } {
+						var win, layout, fieldLayout, textEdit, buttonLayout, matrixLayout, okButton, cancelButton, matrixScrollView, matrixScrollCanvas;
+						var sel, matrix;
+						var tmpMatrix;
+
+						sel = caller.selection[0];
+						matrix = m_parent.matrix(sel);
+						tmpMatrix = SuperDiffuse_Matrix.newFrom(matrix,"tmp");
+
+						win = Window("SuperDiffuse | Edit Matrix");
+						layout = VLayout();
+						fieldLayout = HLayout();
+						buttonLayout = HLayout();
+
+
+						fieldLayout.add(StaticText().string_("Name: "));
+						textEdit = TextField().string_(matrix.name);
+						fieldLayout.add(textEdit);
+
+						cancelButton = Button().states_([["Cancel"]]).action_({
+							win.close;
+						});
+						okButton = Button().states_([["OK"]]).action_({
+							if(textEdit.string != matrix.name)
+							{
+								matrix.name = textEdit.string;
+
+								caller.value_(sel);
+
+							};
+							matrix.matrix = tmpMatrix.matrix;
+							m_parent.loadMatrix(matrix);
+
+							this.updateMatrices;
+
+							m_parent.createSaveFile(m_parent.saveFileLoc);
+							win.close;
+						});
+
+						buttonLayout.add(cancelButton);
+						buttonLayout.add(okButton);
+
+						layout.add(fieldLayout);
+
+
+						matrixScrollView = ScrollView();
+						matrixScrollCanvas = View();
+						matrixScrollView.canvas_(matrixScrollCanvas);
+
+						matrixLayout = GridLayout();
+						matrixScrollCanvas.layout_(matrixLayout);
+
+						matrix.matrix.size.do({ | in |
+							matrix.matrix[0].size.do({ | out |
+								var numBox;
+
+								numBox = NumberBox()
+								.align_(\center)
+								.clipLo_(0)
+								.value_(tmpMatrix.matrix[in][out])
+								.action_({|caller|
+									tmpMatrix.matrix[in][out] = caller.value;
+
+									if(caller.value > 1)
+									{
+										caller.background_(Color.red);
+									}
+									{
+										if(caller.value > 0)
+										{
+											caller.background_(Color.green(1, caller.value));
+										}
+										{
+											caller.background_(Color.white);
+										};
+									};
+								})
+								.toolTip_("%:%".format(in+1, out+1));
+
+								if(tmpMatrix.matrix[in][out] > 1)
+								{
+									numBox.background_(Color.red);
+								}
+								{
+									if(tmpMatrix.matrix[in][out] > 0)
+									{
+										numBox.background_(Color.green(1,tmpMatrix.matrix[in][out]));
+									}
+									{
+										numBox.background_(Color.white);
+									};
+								};
+
+
+								matrixLayout.add(StaticText().string_("In%".format(in+1)).align_(\center), in+1, 0);
+								matrixLayout.add(StaticText().string_("Out%".format(out+1)).align_(\center), 0, out+1);
+								matrixLayout.add(numBox,in+1,out+1);
+							});
+						});
+
+						layout.add(matrixScrollView);
+
+						layout.add(buttonLayout);
+
+						win.layout_(layout);
+						win.front;
+					}
+					{ (key == 0x44) && (modifiers.isCtrl || modifiers.isCmd) } {
+						m_parent.addMatrix("copy", selectedMatrix);
+					};
+				};
 			};
 		};
 
@@ -352,19 +414,16 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		})
 		.keyDownAction_(m_matrixEditFunc);
 
-		m_matricesLayout.add(StaticText().string_("Matrices"),align:\center);
-		m_matricesLayout.add(m_matricesListView);
-
-		m_matrixAddButton = Button().states_([["+"]]).action_({
+		m_matrixAddButton = Button().minWidth_(10).states_([["+"]]).action_({
 			var sel;
 			sel = m_matricesListView.selection[0];
 			m_parent.addMatrix("Untitled");
 			m_matricesListView.value_(sel);
+			m_parent.createSaveFile(m_parent.saveFileLoc);
+			m_matricesListView.focus;
 		});
 
-		m_matricesButtonLayout.add(m_matrixAddButton);
-
-		m_matrixRemoveButton = Button().states_([["-"]]).action_({
+		m_matrixRemoveButton = Button().minWidth_(10).states_([["-"]]).action_({
 			var sel;
 
 			sel = m_matricesListView.selection[0];
@@ -380,25 +439,157 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 						{
 							piece.matrixInd = 0;
 						}
-					})
+					});
+					m_parent.createSaveFile(m_parent.saveFileLoc);
 				}
 				{
 					"Unable to remove initial matrix".warn;
 				}
 			};
 
+			m_matricesListView.focus;
 		});
 
-		m_matricesButtonLayout.add(m_matrixRemoveButton);
+		m_layout.addSpanning(
+			VLayout(
+				StaticText().string_("Matrices").align_(\center),
+				m_matricesListView,
+				HLayout(
+					m_matrixAddButton,
+					m_matrixRemoveButton
+				)
+			),
+			row: 0,
+			column: 1,
+			rowSpan: 4,
+			columnSpan: 1
+		);
+	}
 
-		m_matricesLayout.add(m_matricesButtonLayout);
+	prCreateControlsView {
+		m_masterVolumeNumberBox = NumberBox().maxWidth_(50).action_({ | caller |
+			m_parent.setMasterLevel(caller.value ** 2);
+			m_masterVolumeSlider.value_(caller.value);
 
-		m_leftLayout.add(m_matricesLayout);
+			if(m_piecesListView.selection[0] != nil)
+			{
+				m_parent.pieces[m_piecesListView.selection[0]].masterLevel_(caller.value);
+			};
+
+			m_parent.createSaveFile(m_parent.saveFileLoc);
+
+			m_sfView.focus;
+		});
+
+		m_masterVolumeSlider = Slider().orientation_(\horizontal).action_({ | caller |
+			m_masterVolumeNumberBox.valueAction_(caller.value);
+		});
+
+		if(Main.versionAtLeast(3,9))
+		{
+			m_meterBridge = SuperDiffuse_LevelMeters(m_parent.numOuts);
+		}
+		{
+			"The MeterBridge requires SuperCollider >= 3.9.3".warn;
+
+			m_meterBridge = StaticText().string_("MeterBridge (requires SuperCollider version >= 3.9.3)").align_(\center);
+		};
 
 
-		m_topLayout.add(m_leftLayout);
-		m_topLayout.setStretch(m_leftLayout,0);
+		m_controlsConfigButton = Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders(); m_sfView.focus;});
+		m_saveButton = Button()
+		.states_([["Save Concert Configuration"]])
+		.mouseDownAction_({ | caller, x, y, modifiers, buttonNumber, clickCount |
+			if((m_parent.saveFileLoc == "") || (clickCount > 1) )
+			{
+				Dialog.savePanel({ | path |
+					m_parent.createSaveFile(path);
+				});
+			}
+			{
+				m_parent.createSaveFile(m_parent.saveFileLoc);
+			};
+		})
+		.mouseUpAction_({m_sfView.focus;});
 
+		m_midiConfigButton = Button().states_([["Configure MIDI"]]).action_({m_parent.configureMIDI; m_sfView.focus;});
+
+		m_filterConfigButton = Button().states_([["Configure Filters"]]).action_({m_parent.configureFilters; m_sfView.focus; });
+
+		m_clock = SuperDiffuse_Clock();
+
+		m_layout.addSpanning(
+			m_parent.controls.gui,
+			row: 0,
+			column: 2,
+			rowSpan: 1,
+			columnSpan: 1
+		);
+
+		m_layout.addSpanning(
+			if(Main.versionAtLeast(3,9))
+			{
+				m_meterBridge.view
+			}
+			{
+				m_meterBridge;
+			},
+			row: 1,
+			column: 2,
+			rowSpan: 1,
+			columnSpan: 1
+		);
+
+		m_layout.addSpanning(
+			HLayout(
+				m_controlsConfigButton,
+				m_midiConfigButton,
+				m_filterConfigButton,
+				m_saveButton,
+				Button().states_([["Lock Interface"],["Unlock Interface"], ["Unlock Interface"]])
+				.action_({ | caller |
+					this.lockInterface(caller.value > 0); m_sfView.focus;
+				}),
+				Button().states_([["Hide Waveform"], ["Show Waveform"]]).action_({| caller |
+					var tglState = (1 - caller.value).asBoolean;
+
+					m_sfViewHidden = caller.value.asBoolean;
+
+					m_sfView.drawsWaveForm_(tglState);
+					m_sfView.timeCursorOn_(tglState);
+
+					if(m_locked == false)
+					{
+						m_sfView.acceptsMouse_(tglState);
+					};
+
+					m_sfView.focus;
+
+				})
+			),
+			row: 2,
+			column: 2,
+			rowSpan: 1,
+			columnSpan: 1
+		);
+
+		m_layout.addSpanning(
+			HLayout(
+				nil,
+				m_clock.gui,
+				nil,
+				StaticText().string_("Master:"),
+				m_masterVolumeSlider,
+				m_masterVolumeNumberBox,
+			).margins_([0,15,0,15]),
+			row: 3,
+			column: 2,
+			rowSpan: 1,
+			columnSpan: 1
+		);
+	}
+
+	prCreateSfView {
 		m_sfView = SoundFileView()
 		.minWidth_(500)
 		.gridOn_(false)
@@ -421,51 +612,19 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 			}
 		});
 
-		m_rightLayout.add(m_parent.controls.gui,1);
-
-		m_controlsConfigButton = Button().states_([["Configure Control Faders"]]).action_({m_parent.configureOutFaders()});
-		m_saveButton = Button().states_([["Save Concert Configuration"]]).action_({
-			Dialog.savePanel({ | path |
-				m_parent.createSaveFile(path);
-			});
-		});
-		m_midiConfigButton = Button().states_([["Configure MIDI"]]).action_({m_parent.configureMIDI;});
-
-		m_filterConfigButton = Button().states_([["Configure Filters"]]).action_({m_parent.configureFilters;});
-
-		m_rightLayout.add(
-			HLayout(
-				m_controlsConfigButton,
-				m_midiConfigButton,
-				m_filterConfigButton,
-				m_saveButton,
-				Button().states_([["Lock Interface"],["Unlock Interface"]]).action_({ | caller | this.lockInterface(caller.value); })
-			).margins_([10,10,20,20])
+		m_layout.addSpanning(
+			m_sfView,
+			row: 4,
+			column: 0,
+			rowSpan: 1,
+			columnSpan: 3
 		);
-
-		m_clock = SuperDiffuse_Clock();
-
-		m_rightLayout.add(HLayout(nil, m_clock.gui, nil, StaticText().string_("Master:"),m_masterVolumeSlider, m_masterVolumeNumberBox).margins_([10,10,20,20]));
-
-		m_topLayout.add(m_rightLayout);
-		m_topLayout.setStretch(m_rightLayout,2);
-
-		m_mainLayout.add(m_topLayout);
-		m_mainLayout.add(m_sfView, 3);
-
-		m_win.onClose_({ this.stop; m_parent.clear; });
-
-		m_win.view.keyDownAction_({ | caller, modifiers, unicode, keycode |
-			case
-			{keycode == 32} { if(m_parent.isPlaying) { this.stop } { this.play }; }
-			{keycode == 13} { m_sfView.timeCursorPosition_(0); m_clock.reset; m_sfView.setSelection(0,[0,0]); }
-		});
-
-		m_win.front;
 	}
 
 	lockInterface { | state |
-		var invState = 1 - state;
+		var invState = state.not;
+
+		m_locked = state.asBoolean;
 
 		m_matricesListView.enabled_(invState);
 		m_matrixAddButton.enabled_(invState);
@@ -481,25 +640,17 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 		if(state.asBoolean)
 		{
-			m_piecesListView.keyDownAction_({ | caller, modifiers, unicode, keycode |
-				if( (caller.selection[0] != nil) && (keycode == 32) )
-				{
-					if(m_parent.isPlaying)
-					{
-						this.stop;
-					}
-					{
-						this.play(caller.selection[0]);
-					};
-				};
-			});
-			m_matricesListView.keyDownAction_({});
+			m_sfView.acceptsMouse_(false);
 
 		}
 		{
-			m_piecesListView.keyDownAction_(m_pieceEditFunc);
-			m_matricesListView.keyDownAction_(m_matrixEditFunc);
+			if(m_sfViewHidden == false)
+			{
+				m_sfView.acceptsMouse_(true);
+			};
 		};
+
+		m_sfView.focus;
 	}
 
 	updatePieces {
@@ -526,10 +677,38 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		}
 	}
 
-	update {
-		this.updatePieces;
-		this.updateMatrices;
-		this.updateSFView;
+	updateWindowTitle {
+		var winTitle = "SuperDiffuse | v" ++ SuperDiffuse.version;
+
+		if(m_parent.saveFileLoc != "")
+		{
+			winTitle = winTitle ++ " - " ++ PathName(m_parent.saveFileLoc).fileNameWithoutExtension;
+		};
+
+		m_win.name = winTitle;
+	}
+
+	update { | notifyType |
+		switch(notifyType)
+		{\pieceAdded}{
+			this.updatePieces;
+			if(m_firstPiece)
+			{
+				this.loadFirstPiece;
+			}
+		}
+		{\pieceRemoved}{ this.updatePieces; this.updateSFView; }
+		{\pieceChanged}{ this.updateSFView; }
+		{\matrixAdded}{ this.updateMatrices; }
+		{\matrixRemoved}{ this.updateMatrices; }
+		{\saveFileLocChanged}{ this.updateWindowTitle; }
+		// default:
+		{
+			this.updatePieces;
+			this.updateMatrices;
+			this.updateSFView;
+			this.updateWindowTitle;
+		}
 	}
 
 	updatePlayhead { | start, end, sampleRate |
@@ -562,10 +741,11 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_playheadRoutine.play(SystemClock);
 	}
 
-	ready {
+	loadFirstPiece {
 		if(m_piecesListView.items.size > 0)
 		{
 			m_piecesListView.valueAction_(0);
+			m_firstPiece = false;
 		}
 	}
 

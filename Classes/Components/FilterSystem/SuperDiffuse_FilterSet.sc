@@ -20,10 +20,20 @@ SuperDiffuse_FilterSet
 		^super.new.init(numIns, numOuts, inBus, outBus, inFxGroup, outFxGroup);
 	}
 
+	*newFrom { | filterSet, name |
+		^super.new.initFrom(filterSet, name);
+	}
+
 	init { | numIns, numOuts, inBus, outBus, inFxGroup, outFxGroup |
 		m_inFilters = Array.fill(numIns, { | ind | SuperDiffuse_FilterUnit(inBus.subBus(ind), inFxGroup ); });
 		m_outFilters = Array.fill(numOuts, { | ind | SuperDiffuse_FilterUnit(outBus.subBus(ind), outFxGroup); });
 		m_name = "New Filter Set";
+	}
+
+	initFrom { | filterSet, name |
+		m_name = name;
+		m_inFilters = filterSet.inFilters.deepCopy.do({ | filterUnit |filterUnit.init; });
+		m_outFilters = filterSet.outFilters.deepCopy.do({ | filterUnit | filterUnit.init; });
 	}
 
 	inFilterAt { | ind |

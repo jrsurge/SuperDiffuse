@@ -52,7 +52,7 @@ SuperDiffuse_Clock
 		m = (totalSeconds / 60 % 60).floor;
 		h = (totalSeconds / 60 / 60).floor;
 
-		^"%:%:%".format(h.asString.padLeft(2,"0"),m.asString.padLeft(2,"0"),s.asString.padLeft(2,"0"));
+		^"%:%:%".format(h.asInteger.asString.padLeft(2,"0"),m.asInteger.asString.padLeft(2,"0"),s.asInteger.asString.padLeft(2,"0"));
 	}
 
 	reset {

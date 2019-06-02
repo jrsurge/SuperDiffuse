@@ -1,23 +1,35 @@
 /* Convenience wrapper */
 SuperDiffuse {
+	classvar <version = "1.4.0";
+
 	*new { | numIns, numOuts, numControls |
+		var concert, gui;
+
+		if(Server.default.serverRunning.not)
+		{
+			Error("SuperDiffuse: Server isn't running. Boot the server with the correct numOuts").throw;
+		};
+
 		if(numOuts > Server.default.options.numOutputBusChannels)
 		{
 			Error("Server doesn't have enough output channels - update Server.default.options.numOutputBusChannels").throw;
-		}
-		{
-			^SuperDiffuse_Concert(numIns, numOuts, numControls);
-		}
+		};
+
+		concert = SuperDiffuse_Concert(numIns, numOuts, numControls);
+		gui = SuperDiffuse_ConcertGUI(concert);
+
+		^concert;
 	}
 
 	*load { | pathToSaveFile |
-		var dic, concert;
+		var dic, concert, gui;
 
 		File.use(pathToSaveFile, "r", { | file |
 			dic = interpret(file.readAllString);
 		});
 
 		concert = SuperDiffuse_Concert(dic[\setupInfo][0], dic[\setupInfo][1], dic[\setupInfo][2]);
+		concert.setSaveFileLoc(pathToSaveFile);
 
 		dic[\pieces].do({|pieceInfo|
 			var piece = SuperDiffuse_Piece(pieceInfo[0]);
@@ -96,7 +108,7 @@ SuperDiffuse {
 			concert.assignMIDI(ind, conf[0], conf[1]);
 		});
 
-		concert.loaded;
+		gui = SuperDiffuse_ConcertGUI(concert);
 
 		^concert;
 	}
@@ -120,10 +132,11 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	var m_inBus, m_outBus, m_controlBus;
 	var m_patchers;
 	var m_inGroup, m_inFxGroup, m_patcherGroup, m_outFxGroup, m_outGroup;
-	var m_concertGUI;
 	var m_filterManager;
 
 	var m_playingPiece;
+
+	var m_saveFileLoc = "";
 
 	*new { | numIns, numOuts, numControls |
 		^super.new.ninit(numIns,numOuts,numControls);
@@ -154,13 +167,14 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		m_numOuts.do({ | i |
 			m_outFaders.add(SuperDiffuse_OutFader(m_masterControl.fader(i%numControls), m_controlBus.subBus(i)));
 		});
-		m_concertGUI = SuperDiffuse_ConcertGUI(this);
 
-		("\n\n*** Welcome to SuperDiffuse ***\nCopyright(c) James Surgenor, 2016\nDeveloped at the University of Sheffield Sound Studios\n\n").postln;
+		Post << "*** Welcome to SuperDiffuse ***" "\nVersion " << SuperDiffuse.version << "\nCopyright(c) James Surgenor, 2016-2019\nDeveloped at the University of Sheffield Sound Studios\n\n";
 
 		Synth(\sd_outsynth,[\in, m_outBus, \control, m_controlBus], m_outGroup);
+	}
 
-		m_concertGUI.update;
+	notify { | notifyType |
+		m_observers.do(_.update(notifyType));
 	}
 
 	registerSynthDefs {
@@ -177,7 +191,11 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 			sig = In.ar(in,m_numOuts);
 			amps = In.kr(control, m_numOuts);
 
-			Out.ar(0, sig * Lag.kr(amps) * masterLevel);
+			sig = sig * Lag.kr(amps) * masterLevel;
+
+			SendPeakRMS.kr(sig, 10, 3, '/SuperDiffuse/OutLevels');
+
+			Out.ar(0, sig);
 		}).add;
 
 		"Adding sd_filterSynth".inform;
@@ -222,23 +240,33 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		if(piece.isKindOf(SuperDiffuse_Piece) && (m_pieces.includesEqual(piece) != true))
 		{
 			m_pieces.add(piece);
-			this.notify;
+			this.notify(\pieceAdded);
 		}
 	}
 
-	addMatrix { | name |
-		m_matrices.add(SuperDiffuse_Matrix.newFrom(m_matrixMaster, name));
-		m_observers.do(_.updateMatrices);
+	addMatrix { | name, refIndex=nil |
+		var refMatrix = m_matrixMaster;
+
+		if(refIndex != nil)
+		{
+			refMatrix = m_matrices[refIndex];
+			name = refMatrix.name + "Copy";
+		};
+
+		m_matrices.add(SuperDiffuse_Matrix.newFrom(refMatrix, name));
+
+		this.notify(\matrixAdded);
 	}
 
 	removePiece { | piece |
 		m_pieces.remove(piece);
-		this.notify;
+		this.notify(\pieceRemoved);
 	}
 
 	removeMatrix { | matrix |
 		m_matrices.remove(matrix);
 		m_observers.do(_.updateMatrices);
+		this.notify(\matrixRemoved);
 	}
 
 	loadMatrix { | matrix |
@@ -352,6 +380,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 				})
 			)
 		));
+		win.onClose_({this.createSaveFile(m_saveFileLoc);});
 		win.front;
 	}
 
@@ -396,6 +425,7 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 				)
 			)
 		);
+		win.onClose_({this.createSaveFile(m_saveFileLoc);});
 		win.front;
 	}
 
@@ -412,9 +442,21 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		filterList = ListView().items_(m_filterManager.names).keyDownAction_({ | caller, char, modifiers, unicode, keycode, key |
 			if(caller.hasFocus)
 			{
-				if( (caller.selection[0] != nil) && (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd))
+				var selectedFilterSet = caller.selection[0];
+
+				if(selectedFilterSet != nil)
 				{
-					m_filterManager[caller.selection[0]].gui({caller.items_(m_filterManager.names); m_filterManager.reload; });
+					case
+					{ (key == 0x45) && (modifiers.isCtrl || modifiers.isCmd) } {
+						m_filterManager[caller.selection[0]].gui({caller.items_(m_filterManager.names); m_filterManager.reload; });
+					}
+					{ (key == 0x44) && (modifiers.isCtrl || modifiers.isCmd ) }
+					{
+						var filterSet = m_filterManager[selectedFilterSet];
+
+						m_filterManager.addFilterSet(SuperDiffuse_FilterSet.newFrom(filterSet, filterSet.name + "Copy"));
+						filterList.items_(m_filterManager.names);
+					};
 				}
 			}
 		});
@@ -424,9 +466,15 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 			filterList.items_(m_filterManager.names);
 		});
 
-		layout.add(VLayout(filterList, HLayout(filterAddButton)));
+		filterRemoveButton = Button().states_([["-"]]).action_({
+			m_filterManager.removeFilterSet(filterList.selection[0]);
+			filterList.items_(m_filterManager.names);
+		});
+
+		layout.add(VLayout(filterList, HLayout(filterAddButton, filterRemoveButton)));
 
 		win.layout_(layout);
+		win.onClose_({this.createSaveFile(m_saveFileLoc);});
 		win.front;
 	}
 
@@ -481,31 +529,43 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 	createSaveFile { | path |
 		var dic;
 
-		dic = Dictionary();
+		if(path != "")
+		{
+			this.setSaveFileLoc(path);
 
-		dic.add(\setupInfo -> [m_numIns, m_numOuts, m_numControls]);
-		dic.add(\pieces -> m_pieces.collect({|piece| [piece.path, piece.name, piece.matrixInd, piece.masterLevel, piece.filterInd] }));
-		dic.add(\matrices -> m_matrices.collect({|matrix| [matrix.name, matrix.matrix] }));
+			dic = Dictionary();
 
-		dic.add(
-			\filterSets ->
-			m_filterManager.filterSets.collect({| filterSet |
-				[filterSet.name, filterSet.inFilters.collect({|fu| fu.saveInfo; }), filterSet.outFilters.collect({|fu| fu.saveInfo; })];
-			})
-		);
+			dic.add(\setupInfo -> [m_numIns, m_numOuts, m_numControls]);
+			dic.add(\pieces -> m_pieces.collect({|piece| [piece.path, piece.name, piece.matrixInd, piece.masterLevel, piece.filterInd] }));
+			dic.add(\matrices -> m_matrices.collect({|matrix| [matrix.name, matrix.matrix] }));
+
+			dic.add(
+				\filterSets ->
+				m_filterManager.filterSets.collect({| filterSet |
+					[filterSet.name, filterSet.inFilters.collect({|fu| fu.saveInfo; }), filterSet.outFilters.collect({|fu| fu.saveInfo; })];
+				})
+			);
 
 
-		dic.add(\controlsConfig -> m_outFaders.collect({|outFader| m_masterControl.indexOf(outFader.subject)}));
-		dic.add(\midiConfig -> m_masterControl.faders.collect({|fader| [fader.midiChan, fader.midiCC]}));
+			dic.add(\controlsConfig -> m_outFaders.collect({|outFader| m_masterControl.indexOf(outFader.subject)}));
+			dic.add(\midiConfig -> m_masterControl.faders.collect({|fader| [fader.midiChan, fader.midiCC]}));
 
-		File.use(path, "w", { | file |
-			file.write(dic.asCompileString);
-		});
+			File.use(path, "w", { | file |
+				file.write(dic.asCompileString);
+			});
+		}
 	}
 
-	loaded {
-		// should only be called from SuperDiffuse.load function - indicates we have loaded from a file and the first piece needs loading up..
-		m_concertGUI.ready;
+	setSaveFileLoc { | path |
+		if(path != m_saveFileLoc)
+		{
+			m_saveFileLoc = path;
+			this.notify(\saveFileLocChanged);
+		};
+	}
+
+	saveFileLoc {
+		^ m_saveFileLoc;
 	}
 
 	play { | index, start, end |
@@ -529,6 +589,18 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 	setMasterLevel { | level |
 		m_outGroup.set(\masterLevel, level);
+	}
+
+	numIns {
+		^m_numIns;
+	}
+
+	numOuts {
+		^m_numOuts;
+	}
+
+	numControls {
+		^m_numControls;
 	}
 
 }
