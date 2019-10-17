@@ -5,6 +5,10 @@
     * This may have been addressed in newer SC versions(?)
 - [2] Using the mouse-wheel in the Edit Matrix window when it has scrollbars can cause trouble. The NumberBox doesn't steal the mouse properly on mouse-wheel, so the scroll event propagates to the ScrollArea. I'm working on a PR to the main SuperCollider repo to address this.
 
+## Version 1.4.1
+### Fixes
+* Patch to fix an issue where removing a FilterSet would result in pieces that used it accessing the deleted FilterSet. Pieces now reset to the default FilterSet when their FilterSet is removed.
+
 ## Version 1.4.0
 A big usability update. This version __requires SuperCollider >= 3.9__.
 
