@@ -467,8 +467,25 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 		});
 
 		filterRemoveButton = Button().states_([["-"]]).action_({
-			m_filterManager.removeFilterSet(filterList.selection[0]);
-			filterList.items_(m_filterManager.names);
+			var ind = filterList.selection[0];
+
+			var removed = m_filterManager.removeFilterSet(ind);
+
+			if(removed)
+			{
+				m_pieces.do({ | piece |
+					if(piece.filterInd == ind)
+					{
+						piece.filterInd = 0;
+
+						if(piece === m_playingPiece)
+						{
+							m_filterManager.load(0);
+						};
+					};
+				});
+				filterList.items_(m_filterManager.names);
+			};
 		});
 
 		layout.add(VLayout(filterList, HLayout(filterAddButton, filterRemoveButton)));

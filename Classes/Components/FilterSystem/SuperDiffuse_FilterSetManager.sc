@@ -45,6 +45,8 @@ SuperDiffuse_FilterSetManager
 	}
 
 	removeFilterSet { | ind |
+		var removed = false; // assume we didn't remove anything
+
 		if(ind > 0) // don't remove the default filterset
 		{
 			// if we're removing the current set, unload it first
@@ -57,7 +59,10 @@ SuperDiffuse_FilterSetManager
 			};
 
 			m_filterSets.removeAt(ind);
+			removed = true;
 		}
+
+		^removed;
 	}
 
 	at { | ind |
