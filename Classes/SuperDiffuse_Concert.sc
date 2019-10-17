@@ -1,6 +1,6 @@
 /* Convenience wrapper */
 SuperDiffuse {
-	classvar <version = "1.4.0";
+	classvar <version = "1.4.1";
 
 	*new { | numIns, numOuts, numControls |
 		var concert, gui;
