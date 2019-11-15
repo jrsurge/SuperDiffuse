@@ -512,6 +512,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				Dialog.savePanel({ | path |
 					m_parent.createSaveFile(path);
 				});
+				m_sfView.focus;
 			}
 			{
 				m_parent.createSaveFile(m_parent.saveFileLoc);
