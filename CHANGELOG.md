@@ -3,7 +3,24 @@
 ## Known issues
 - [1] Moving control faders (MIDI) while a piece is loading will lock the interface, forcing a restart of SuperDiffuse. This appears to be a SuperCollider/Qt threading issue.
     * This may have been addressed in newer SC versions(?)
-- [2] Using the mouse-wheel in the Edit Matrix window when it has scrollbars can cause trouble. The NumberBox doesn't steal the mouse properly on mouse-wheel, so the scroll event propagates to the ScrollArea. I'm working on a PR to the main SuperCollider repo to address this.
+- [2] Using the mouse-wheel in the Edit Matrix window when it has scrollbars can cause trouble. The NumberBox doesn't steal the mouse properly on mouse-wheel, so the scroll event propagates to the ScrollArea. __This has been fixed in SuperCollider 3.10.3, when using SuperDiffuse v1.5.0__ .
+
+## Version 1.5.0
+### New Features
+* Added ability to import from other concerts. Using the "Import.." button, you can now import:
+  * MIDI Configuration
+  * Control Configuration
+  * Matrices
+  * Filter Sets
+
+  __NOTE__: Importing MIDI or Control Configurations will replace those in the current concert. Importing cannot be undone.
+
+### Fixes
+* Reduced number of autosaves when moving master fader - only saves on mouseUp
+* Applied fix for known issue [2] for SC versions >= 3.10.3
+  * __NOTE__: Requires SuperCollider >= 3.10.3
+* The save button now refocuses on SoundFileView properly
+* Fixed an issue with the Edit Matrix and Control Fader Configuration windows that caused multiple labels to be drawn for each item.
 
 ## Version 1.4.1
 ### Fixes
