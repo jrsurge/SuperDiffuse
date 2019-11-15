@@ -51,8 +51,7 @@ SuperDiffuse {
 		concert.matrices.clear;
 
 		dic[\matrices].do({|matrixInfo|
-			concert.addMatrix(matrixInfo[0]);
-			concert.matrices.last.matrix = matrixInfo[1];
+			concert.importMatrix(matrixInfo);
 		});
 
 		// old save files won't have filterSets
@@ -62,51 +61,12 @@ SuperDiffuse {
 			concert.filterManager.clear; // doing this here ensures we have the Default filterSet even if it's an old save
 
 			dic[\filterSets].do({| filterSetInfo |
-				var fs = concert.filterManager.createFilterSet;
-
-				fs.name_(filterSetInfo[0]);
-
-				// inFilters
-				filterSetInfo[1].do({ | info, ind |
-					fs.inFilters[ind]
-					.active_(info[0])
-					.hpOn_(info[1])
-					.bpOn_(info[2])
-					.lpOn_(info[3])
-					.hpFreq_(info[4])
-					.bpFreq_(info[5])
-					.bpRq_(info[6])
-					.bpGain_(info[7])
-					.lpFreq_(info[8])
-					;
-				});
-
-				// outFilters
-				filterSetInfo[2].do({ | info, ind |
-					fs.outFilters[ind]
-					.active_(info[0])
-					.hpOn_(info[1])
-					.bpOn_(info[2])
-					.lpOn_(info[3])
-					.hpFreq_(info[4])
-					.bpFreq_(info[5])
-					.bpRq_(info[6])
-					.bpGain_(info[7])
-					.lpFreq_(info[8])
-					;
-				});
-
-				concert.filterManager.addFilterSet(fs);
+				concert.importFilterSet(filterSetInfo);
 			})
 		};
 
-		dic[\controlsConfig].do({| controlAssignment, ind |
-			concert.assignControl(controlAssignment, ind);
-		});
-
-		dic[\midiConfig].do({| conf, ind |
-			concert.assignMIDI(ind, conf[0], conf[1]);
-		});
+		concert.importControlConfig(dic[\controlsConfig]);
+		concert.importMIDIConfig(dic[\midiConfig]);
 
 		gui = SuperDiffuse_ConcertGUI(concert);
 
@@ -583,6 +543,61 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 	saveFileLoc {
 		^ m_saveFileLoc;
+	}
+
+	importMatrix { | matrixInfo |
+		this.addMatrix(matrixInfo[0]);
+		this.matrices.last.matrix = matrixInfo[1];
+	}
+
+	importFilterSet { | filterSetInfo |
+		var fs = this.filterManager.createFilterSet;
+
+		fs.name_(filterSetInfo[0]);
+
+		// inFilters
+		filterSetInfo[1].do({ | info, ind |
+			fs.inFilters[ind]
+			.active_(info[0])
+			.hpOn_(info[1])
+			.bpOn_(info[2])
+			.lpOn_(info[3])
+			.hpFreq_(info[4])
+			.bpFreq_(info[5])
+			.bpRq_(info[6])
+			.bpGain_(info[7])
+			.lpFreq_(info[8])
+			;
+		});
+
+		// outFilters
+		filterSetInfo[2].do({ | info, ind |
+			fs.outFilters[ind]
+			.active_(info[0])
+			.hpOn_(info[1])
+			.bpOn_(info[2])
+			.lpOn_(info[3])
+			.hpFreq_(info[4])
+			.bpFreq_(info[5])
+			.bpRq_(info[6])
+			.bpGain_(info[7])
+			.lpFreq_(info[8])
+			;
+		});
+
+		this.filterManager.addFilterSet(fs);
+	}
+
+	importControlConfig { | controlInfo |
+		controlInfo.do({| controlAssignment, ind |
+			this.assignControl(controlAssignment, ind);
+		});
+	}
+
+	importMIDIConfig { | midiInfo |
+		midiInfo.do({| conf, ind |
+			this.assignMIDI(ind, conf[0], conf[1]);
+		});
 	}
 
 	play { | index, start, end |
