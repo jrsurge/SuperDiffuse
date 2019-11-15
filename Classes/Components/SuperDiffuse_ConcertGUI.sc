@@ -13,6 +13,8 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 
 	var m_controlsConfigButton, m_saveButton, m_midiConfigButton, m_filterConfigButton;
 
+	var m_importButton;
+
 	var m_masterVolumeSlider, m_masterVolumeNumberBox;
 
 	var m_clock;
@@ -512,6 +514,17 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		})
 		.mouseUpAction_({m_sfView.focus;});
 
+		m_importButton = Button()
+		.states_([["Import.."]])
+		.mouseDownAction_({
+			FileDialog({ | paths |
+				SuperDiffuse_Import(m_parent, paths[0]);
+			},{}, path: Platform.userHomeDir);
+
+			m_sfView.focus;
+		});
+
+
 		m_midiConfigButton = Button().states_([["Configure MIDI"]]).action_({m_parent.configureMIDI; m_sfView.focus;});
 
 		m_filterConfigButton = Button().states_([["Configure Filters"]]).action_({m_parent.configureFilters; m_sfView.focus; });
@@ -546,6 +559,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				m_midiConfigButton,
 				m_filterConfigButton,
 				m_saveButton,
+				m_importButton,
 				Button().states_([["Lock Interface"],["Unlock Interface"], ["Unlock Interface"]])
 				.action_({ | caller |
 					this.lockInterface(caller.value > 0); m_sfView.focus;
@@ -637,6 +651,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 		m_filterConfigButton.enabled_(invState);
 		m_midiConfigButton.enabled_(invState);
 		m_saveButton.enabled_(invState);
+		m_importButton.enabled_(invState);
 
 		if(state.asBoolean)
 		{
