@@ -298,6 +298,7 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 						var win, layout, fieldLayout, textEdit, buttonLayout, matrixLayout, okButton, cancelButton, matrixScrollView, matrixScrollCanvas;
 						var sel, matrix;
 						var tmpMatrix;
+						var setMouseWheelAction = false;
 
 						sel = caller.selection[0];
 						matrix = m_parent.matrix(sel);
@@ -346,6 +347,24 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 						matrixLayout = GridLayout();
 						matrixScrollCanvas.layout_(matrixLayout);
 
+						if(Main.scVersionMajor >= 3)
+						{
+							if(Main.scVersionMinor >= 10)
+							{
+								var patch = Main.scVersionPostfix.drop(1).asInteger;
+								if(Main.scVersionMinor == 10)
+								{
+									if(patch >= 3)
+									{
+										setMouseWheelAction = true;
+									}
+								}
+								{
+									setMouseWheelAction = true;
+								};
+							};
+						};
+
 						matrix.matrix.size.do({ | in |
 							matrix.matrix[0].size.do({ | out |
 								var numBox;
@@ -372,6 +391,29 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 									};
 								})
 								.toolTip_("%:%".format(in+1, out+1));
+
+								if(setMouseWheelAction)
+								{
+									numBox.mouseWheelAction_({ | caller, x, y, mod, xDelta, yDelta |
+										var retVal = false;
+
+										// only respond to yDelta - xDelta props
+										if(yDelta > 0)
+										{
+											caller.valueAction_(caller.value + 1);
+											retVal = true;
+										};
+
+										if(yDelta < 0)
+										{
+											caller.valueAction_(caller.value - 1);
+											retVal = true;
+										};
+
+
+										retVal;
+									});
+								};
 
 								if(tmpMatrix.matrix[in][out] > 1)
 								{
