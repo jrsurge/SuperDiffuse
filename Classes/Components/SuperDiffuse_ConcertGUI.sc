@@ -478,13 +478,18 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 				m_parent.pieces[m_piecesListView.selection[0]].masterLevel_(caller.value);
 			};
 
-			m_parent.createSaveFile(m_parent.saveFileLoc);
+			if(caller.hasFocus)
+			{
+				m_parent.createSaveFile(m_parent.saveFileLoc);
+			};
 
 			m_sfView.focus;
 		});
 
 		m_masterVolumeSlider = Slider().orientation_(\horizontal).action_({ | caller |
 			m_masterVolumeNumberBox.valueAction_(caller.value);
+		}).mouseUpAction_({
+			m_parent.createSaveFile(m_parent.saveFileLoc);
 		});
 
 		if(Main.versionAtLeast(3,9))
