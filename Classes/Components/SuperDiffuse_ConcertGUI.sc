@@ -366,8 +366,14 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 						};
 
 						matrix.matrix.size.do({ | in |
+							matrixLayout.add(StaticText().string_("In%".format(in+1)).align_(\center), in+1, 0);
 							matrix.matrix[0].size.do({ | out |
 								var numBox;
+
+								if(in == 0)
+								{
+									matrixLayout.add(StaticText().string_("Out%".format(out+1)).align_(\center), 0, out+1);
+								};
 
 								numBox = NumberBox()
 								.align_(\center)
@@ -429,9 +435,6 @@ SuperDiffuse_ConcertGUI : SuperDiffuse_Observer {
 									};
 								};
 
-
-								matrixLayout.add(StaticText().string_("In%".format(in+1)).align_(\center), in+1, 0);
-								matrixLayout.add(StaticText().string_("Out%".format(out+1)).align_(\center), 0, out+1);
 								matrixLayout.add(numBox,in+1,out+1);
 							});
 						});

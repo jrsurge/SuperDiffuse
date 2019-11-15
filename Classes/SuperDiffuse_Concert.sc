@@ -309,7 +309,11 @@ SuperDiffuse_Concert : SuperDiffuse_Subject {
 
 				togglesPerControl.add(pt);
 
-				layout.add(StaticText().string_("Out" ++ (outInd + 1)).align_(\center), 0, outInd+1, \center);
+				if(ctrlInd == 0)
+				{
+					layout.add(StaticText().string_("Out" ++ (outInd + 1)).align_(\center), 0, outInd+1, \center);
+				};
+
 				layout.add(pt, ctrlInd + 1, outInd + 1);
 			});
 			toggles.add(togglesPerControl);
