@@ -43,3 +43,25 @@ This will recreate the concert exactly as it was before.
 note::
 You cannot load a configuration inside a running instance - there is no "Load Concert Configuration" button for this reason.
 ::
+
+section::Importing from other Concerts
+Since version 1.5.0, you can import any of the following from an existing concert save:
+list::
+## MIDI Configuration
+## Control Configuration
+## Matrices
+## Filter Sets
+::
+
+Pressing the "Import.." button will open a prompt. Navigate to and select an existing concert save file. The Import dialog will then display:
+
+image::import-dialog.png::
+
+The MIDI and Control configurations will be imported when their buttons are checked - [ X ]
+
+warning::Importing a MIDI or Control configuration will replace the current configuration in the concert. Importing configurations cannot be undone.::
+
+Clicking on a matrix or filter set will mark it for import, clicking it again will unmark it.
+
+When you have marked everything you'd like to import, press the OK button to perform the import.
+Pressing Cancel will abort in the import.
